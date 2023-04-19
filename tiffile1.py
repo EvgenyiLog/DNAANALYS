@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[15]:
 
 
 from PIL import Image
@@ -35,6 +35,18 @@ def main():
     plt.grid(True)
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
+    
+    ret, thresh = cv2.threshold(image, 1, 2, 0)
+    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    print(contours)
+    
+    
+    
+    plt.figure(figsize=(15,7))
+    plt.imshow(thresh,cmap='gray')
+    plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
     plt.show()
     
     
@@ -43,6 +55,12 @@ def main():
     
 if __name__ == "__main__":
     main()
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:
