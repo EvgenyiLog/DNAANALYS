@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 from PIL import Image
@@ -293,6 +293,7 @@ def main():
     print(r)
     r=eng.normxcorr2(image1,image2)
     r=np.asarray(r)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_a_normxcorr2.jpg",r)
     plt.figure(figsize=(15,7))
     plt.imshow(r,cmap='gray')
     plt.grid(True)
