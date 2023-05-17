@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[8]:
+# In[ ]:
 
 
 from PIL import Image
@@ -337,10 +337,4 @@ def main():
     
 if __name__ == "__main__":
     main()
-
-
-# In[ ]:
-
-
-
 
