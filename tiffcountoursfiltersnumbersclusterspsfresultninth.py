@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 from PIL import Image
@@ -135,7 +135,7 @@ def filtration(image,path):
     hlpfilt=cv2.cvtColor(hlpfilt,cv2.COLOR_GRAY2RGB)
     #hlp=scipy.ndimage.percentile_filter(hlp,95)
     
-    #cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_cfilt.jpg",hlpfilt)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_cfilt.jpg",hlpfilt)
     #cv2.imwrite("C:/Users/Евгений/Downloads/s_1_1102_cfilt.jpg",hlpfilt)
     r=eng.normxcorr2(hlp,image2)
     r=np.asarray(r,dtype=np.uint8)
@@ -148,7 +148,14 @@ def filtration(image,path):
     return hlpfilt
 
 from scipy import special
+import pylab
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d.axes3d import Axes3D
+from matplotlib import cm
+
 def countourfind(image):
+    imagesource=image
     'поиск контуров'
     edges = cv2.Canny(image=image, threshold1=1, threshold2=4)
     plt.figure(figsize=(15,7))
@@ -202,16 +209,16 @@ def countourfind(image):
     print()
     
     plt.figure(figsize=(15,7))
-    plt.hist(cx,bins=50,density=True,stacked=True, facecolor='r',histtype= 'bar',edgecolor='k',linewidth=2, alpha=0.75)
+    plt.hist(xcentr,bins=50,density=True,stacked=True, facecolor='r',histtype= 'bar',edgecolor='k',linewidth=2, alpha=0.75)
     plt.grid(True)
-    plt.ylim(0,100)
+    #plt.ylim(0,100)
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     
     plt.figure(figsize=(15,7))
-    plt.hist(cy,bins=50,density=True,stacked=True, facecolor='r',histtype= 'bar',edgecolor='k',linewidth=2, alpha=0.75)
+    plt.hist(ycentr,bins=50,density=True,stacked=True, facecolor='r',histtype= 'bar',edgecolor='k',linewidth=2, alpha=0.75)
     plt.grid(True)
-    plt.ylim(0,100)
+    #plt.ylim(0,100)
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     
@@ -264,7 +271,8 @@ def countourfind(image):
     hsl=cv2.cvtColor(image,cv2.COLOR_RGB2HLS)
     h,s,l=cv2.split(hsl)
     ln=np.zeros_like(l)
-    ln=l[cx,cy]
+    ln[ycentr,xcentr]=l[ycentr,xcentr]
+    ln=np.asarray(ln,dtype=np.uint8)
     image7=cv2.merge([h,s,ln])
     image7=cv2.cvtColor(image7,cv2.COLOR_HLS2BGR)
     plt.figure(figsize=(15,7))
@@ -275,7 +283,8 @@ def countourfind(image):
     hsv=cv2.cvtColor(image,cv2.COLOR_RGB2HSV)
     h,s,v=cv2.split(hsv)
     vn=np.zeros_like(v)
-    vn=v[cx,cy]
+    vn[ycentr,xcentr]=v[ycentr,xcentr]
+    vn=np.asarray(vn,dtype=np.uint8)
     image8=cv2.merge([h,s,vn])
     image8=cv2.cvtColor(image8,cv2.COLOR_HLS2BGR)
     plt.figure(figsize=(15,7))
@@ -283,9 +292,34 @@ def countourfind(image):
     #plt.grid(True)
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
-    eng = matlab.engine.start_matlab()
     
-    image=eng.imcontour(image,1)
+    fig = plt.figure(figsize=(15,7))          #create a canvas, tell matplotlib it's 3d
+    ax = fig.add_subplot(111, projection='3d')
+
+    hist, xedges, yedges = np.histogram2d(xcentr, ycentr, bins=(50,50))
+    xpos, ypos = np.meshgrid(xedges[:-1]+xedges[1:], yedges[:-1]+yedges[1:])
+
+    xpos = xpos.flatten()/2.
+    ypos = ypos.flatten()/2.
+    zpos = np.zeros_like (xpos)
+
+    dx = xedges [1] - xedges [0]
+    dy = yedges [1] - yedges [0]
+    dz = hist.flatten()
+    dz=dz/dz.sum()
+
+    cmap = cm.get_cmap('jet') # Get desired colormap - you can change this!
+    max_height = np.max(dz)   # get range of colorbars so we can normalize
+    min_height = np.min(dz)
+    # scale each z to [0,1], and get their rgb values
+    rgba = [cmap((k-min_height)/max_height) for k in dz] 
+
+    ax.bar3d(xpos, ypos, zpos, dx, dy, dz, color=rgba, zsort='average')
+    eng = matlab.engine.start_matlab()
+    try:
+        image=eng.imcontour(imagesource,1)
+    except:
+        pass
     eng.quit()
     print('Quality')
     xcentr=np.asarray(xcentr,dtype=float)
