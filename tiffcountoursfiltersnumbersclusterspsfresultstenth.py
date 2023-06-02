@@ -187,10 +187,20 @@ from matplotlib import cm
 from scipy import ndimage as ndi
 from skimage import filters
 from scipy import ndimage
+from skimage.measure import find_contours
 
 def countourfind(image):
     imagesource=image
     'поиск контуров'
+    contours = measure.find_contours(image, 0.8)
+    plt.figure(figsize=(15, 7))
+    plt.imshow(image[0:1000,0:1000], cmap=plt.cm.gray,vmax=image.max(),vmin=image.min())
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    for contour in contours:
+        plt.plot(contour[0:1000, 1], contour[0:1000, 0], linewidth=2)
+        plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
     light_white =(255, 255, 247)
     dark_white = (225, 217, 209)
     imagergb= cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
