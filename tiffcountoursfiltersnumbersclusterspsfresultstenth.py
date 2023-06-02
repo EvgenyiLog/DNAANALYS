@@ -36,6 +36,7 @@ import pyclesperanto_prototype as cle
 from skimage.io import imread
 from skimage.feature import peak_local_max
 from skimage.filters import hessian
+from skimage.metrics import peak_signal_noise_ratio
 
 
 
@@ -72,6 +73,18 @@ def gamma_trans(img,gamma):
     return cv2.LUT(img0,gamma_table)
 
 
+def std_convoluted(image, N):
+    im = np.array(image, dtype=float)
+    im2 = im**2
+    ones = np.ones(im.shape)
+    
+    kernel = np.ones((2*N+1, 2*N+1))
+    s = scipy.signal.convolve2d(im, kernel, mode="same")
+    s2 = scipy.signal.convolve2d(im2, kernel, mode="same")
+    ns = scipy.signal.convolve2d(ones, kernel, mode="same")
+    
+    return np.sqrt((s2 - s**2 / ns) / ns)
+
 def laplacian_of_gaussian(image, sigma):
     """
     Applies a Gaussian kernel to an image and the Laplacian afterwards.
@@ -98,6 +111,8 @@ def filtration(image,path):
     'path to file correlate'
     'image filtration'
     'фильтрация возвращает фильтрованное изображение'
+    psnr=peak_signal_noise_ratio(image, std_convoluted(image,2))
+    print(f'PSNR before filtration={psnr}')
     
     image=scipy.signal.wiener(image,noise=image.std())
     
@@ -114,10 +129,14 @@ def filtration(image,path):
     image2=np.asarray(image2,dtype=np.uint8)
     mse = mean_squared_error(hlp, image2)
     ssim = structural_similarity(hlp, image2, data_range=image2.max() - image2.min())
+    print('mse')
     print(mse)
+    print('ssim')
     print(ssim)
+    print()
     print(hlp.shape)
     print(image2.shape)
+    print()
     image2=np.asarray(image2,dtype=np.uint8)
     eng = matlab.engine.start_matlab()   
     r=eng.corr2(hlp,image2)
@@ -147,6 +166,16 @@ def filtration(image,path):
     #plt.grid(True)
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
+    
+    sigma_est =skimage.restoration.estimate_sigma(hlpfilt)
+    imagew=skimage.restoration.denoise_wavelet(hlpfilt,sigma=sigma_est)
+    plt.figure(figsize=(15,7))
+    plt.imshow(imagew[0:1000,0:1000],cmap='gray',vmax=imagew.max(),vmin=imagew.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    psnr=peak_signal_noise_ratio(hlpfilt, std_convoluted(hlpfilt,2))
+    print(f'PSNR after filtration={psnr}')
     return hlpfilt
 
 from scipy import special
@@ -162,6 +191,16 @@ from scipy import ndimage
 def countourfind(image):
     imagesource=image
     'поиск контуров'
+    light_white =(255, 255, 247)
+    dark_white = (225, 217, 209)
+    imagergb= cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
+    mask_white = cv2.inRange(imagergb, light_white, dark_white)
+    result = cv2.bitwise_and(imagergb, imagergb, mask=mask_white)
+    result= cv2.cvtColor(result,cv2.COLOR_RGB2GRAY)
+    plt.figure(figsize=(15, 7))
+    plt.imshow(result[0:1000,0:1000],cmap='gray',vmax=result.max(),vmin=result.min())
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
     coordinates = peak_local_max(image, min_distance=2)
     xcentrmax=coordinates[:,1]
     ycentrmax=coordinates[:,0]
