@@ -357,7 +357,7 @@ def countourfind(image):
     autoencoder = keras.Model(input, decoded)
     autoencoder.summary()
     autoencoder.compile(optimizer='adadelta', loss='mse')
-    autoencoder.fit(x_train, x_train,epochs=10,batch_size=512)
+    autoencoder.fit(x_train, x_train,epochs=200,batch_size=512)
     edges=autoencoder.predict(x_train)
     edges=np.asarray(edges,dtype=np.uint8)
     plt.figure(figsize=(15,7))
@@ -373,9 +373,6 @@ def countourfind(image):
     #print('Координаты центра')
     xcentr=[]
     ycentr=[]
-    areas=[]
-    perimeters = []
-    
     
     for i in contours:
         M = cv2.moments(i)
@@ -385,9 +382,6 @@ def countourfind(image):
             cy = int(M['m01']/M['m00'])
             xcentr.append(cx)
             ycentr.append(cy)
-        areas.append(cv2.contourArea(i))
-        perimeters.append(cv2.arcLength(i,True))
-        
             
             
         
@@ -511,7 +505,7 @@ def countourfind(image):
                     color = 'k')   #  Цвет делений
     
     plt.figure(figsize=(15,7))
-    plt.hist(ycentr,bins=50,density=True,stacked=True, facecolor='r',histtype= 'bar',edgecolor='k',linewidth=2, alpha=0.75)
+    plt.hist(xcentr,bins=50,density=True,stacked=True, facecolor='r',histtype= 'bar',edgecolor='k',linewidth=2, alpha=0.75)
     plt.grid(True)
     #plt.ylim(0,100)
     plt.tick_params(labelsize =20,#  Размер подписи
@@ -531,28 +525,7 @@ def countourfind(image):
     
     
     
-    fig = plt.figure(figsize=(15,7))          #create a canvas, tell matplotlib it's 3d
-    ax = fig.add_subplot(111, projection='3d')
-
-    hist, xedges, yedges = np.histogram2d(l[xcentr], l[ycentr], bins=(50,50))
-    xpos, ypos = np.meshgrid(xedges[:-1]+xedges[1:], yedges[:-1]+yedges[1:])
-
-    xpos = xpos.flatten()/2.
-    ypos = ypos.flatten()/2.
-    zpos = np.zeros_like (xpos)
-
-    dx = xedges [1] - xedges [0]
-    dy = yedges [1] - yedges [0]
-    dz = hist.flatten()
-    dz=dz/dz.sum()
-
-    cmap = cm.get_cmap('jet') # Get desired colormap - you can change this!
-    max_height = np.max(dz)   # get range of colorbars so we can normalize
-    min_height = np.min(dz)
-    # scale each z to [0,1], and get their rgb values
-    rgba = [cmap((k-min_height)/max_height) for k in dz] 
-
-    ax.bar3d(xpos, ypos, zpos, dx, dy, dz, color=rgba, zsort='average')
+    
     try:
         plt.figure(figsize=(15,7))
         plt.hist(l[xcentr],bins=50,density=True,stacked=True, facecolor='r',histtype= 'bar',edgecolor='k',linewidth=2, alpha=0.75)
@@ -571,11 +544,13 @@ def countourfind(image):
                     color = 'k')   #  Цвет делений
     except:
         pass
-    
-    plt.figure(figsize=(15,7))
-    plt.hist2d(l[xcentr],l[ycentr],bins = 10, cmap ="gray")
-    plt.tick_params(labelsize =20,#  Размер подписи
+    try:
+        plt.figure(figsize=(15,7))
+        plt.hist2d(l[xcentr],l[ycentr],bins = 10, cmap ="gray")
+        plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
+    except:
+        pass
     eng = matlab.engine.start_matlab()
     try:
         image=eng.imcontour(imagesource,1)
@@ -596,13 +571,6 @@ def countourfind(image):
         cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_edgeswolfram.jpg",imageedges)
     except:
         pass
-    
-    
-    
-   
-    
-    
-    
     
     
 def main():
@@ -679,6 +647,12 @@ def main():
     
 if __name__ == "__main__":
     main()
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:
