@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 from PIL import Image
@@ -173,7 +173,7 @@ def localstdmean(image,N):
 
     
 
-
+from sklearn.decomposition import FastICA,PCA
 def filtration(image,path):
     'path to file correlate'
     'image filtration'
@@ -264,12 +264,35 @@ def filtration(image,path):
     compressed_float=(U[:,:k] @ np.diag(S[:k])) @ VT[:k]
     compressed = (np.minimum(compressed_float, 1.0) * 0xff).astype(np.uint8)
     compreseds=cv2.cvtColor(compressed, cv2.COLOR_GRAY2BGR)
-    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_compresed.jpg",compreseds)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_compresedsvd.jpg",compreseds)
     plt.figure(figsize=(15,7))
     plt.imshow(compressed[0:1000,0:1000],cmap='gray',vmax=compressed.max(),vmin=compressed.min())
     #plt.grid(True)
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
+    
+    pca = PCA(n_components=hlpfilt.shape[0]//2)
+    hlpfilt_new=pca.fit_transform(hlpfilt)
+    compresed=pca.inverse_transform(hlpfilt_new)
+    compreseds=cv2.cvtColor(compressed, cv2.COLOR_GRAY2BGR)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_compresedpca.jpg",compreseds)
+    plt.figure(figsize=(15,7))
+    plt.imshow(compressed[0:1000,0:1000],cmap='gray',vmax=compressed.max(),vmin=compressed.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    fastica = FastICA(n_components=hlpfilt.shape[0]//2)
+    hlpfilt_new=fastica.fit_transform(hlpfilt)
+    compresed=fastica.inverse_transform(hlpfilt_new)
+    compreseds=cv2.cvtColor(compressed, cv2.COLOR_GRAY2BGR)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_compresedfastica.jpg",compreseds)
+    plt.figure(figsize=(15,7))
+    plt.imshow(compressed[0:1000,0:1000],cmap='gray',vmax=compressed.max(),vmin=compressed.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    
+    
 
 
     return hlpfilt
@@ -357,7 +380,7 @@ def countourfind(image):
     autoencoder = keras.Model(input, decoded)
     autoencoder.summary()
     autoencoder.compile(optimizer='adadelta', loss='mse')
-    autoencoder.fit(x_train, x_train,epochs=200,batch_size=512)
+    autoencoder.fit(x_train, x_train,epochs=10,batch_size=512)
     edges=autoencoder.predict(x_train)
     edges=np.asarray(edges,dtype=np.uint8)
     plt.figure(figsize=(15,7))
@@ -373,6 +396,8 @@ def countourfind(image):
     #print('Координаты центра')
     xcentr=[]
     ycentr=[]
+    areas=[]
+    perimeters = []
     
     for i in contours:
         M = cv2.moments(i)
@@ -382,6 +407,8 @@ def countourfind(image):
             cy = int(M['m01']/M['m00'])
             xcentr.append(cx)
             ycentr.append(cy)
+        areas.append(cv2.contourArea(i))
+        perimeters.append(cv2.arcLength(i,True))
             
             
         
@@ -430,8 +457,8 @@ def countourfind(image):
                     color = 'k')   #  Цвет делений
     
     cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_contours.jpg",image4)
-    
-    image5=cv2.circle(image3, (cx, cy), 1, (255, 255, 255), -1)
+    for i in range(len(xcentr)):
+        image5=cv2.circle(image3, (xcentr[i], ycentr[i]), 1, (255, 255, 255), -1)
     cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_centers.jpg",image5)
     plt.figure(figsize=(15,7))
     plt.imshow(image5[0:1000,0:1000],cmap='gray',vmax=image5.max(),vmin=image5.min())
@@ -514,7 +541,7 @@ def countourfind(image):
     
     
     plt.figure(figsize=(15,7))
-    plt.hist(v[ycentr],bins=50,density=True,stacked=True, facecolor='r',histtype= 'bar',edgecolor='k',linewidth=2, alpha=0.75)
+    plt.hist(v[ycentr,xcentr],bins='auto',density=True,stacked=True, facecolor='r',histtype= 'bar',edgecolor='k',linewidth=2, alpha=0.75)
     plt.grid(True)
     #plt.ylim(0,100)
     plt.tick_params(labelsize =20,#  Размер подписи
@@ -526,31 +553,13 @@ def countourfind(image):
     
     
     
-    try:
-        plt.figure(figsize=(15,7))
-        plt.hist(l[xcentr],bins=50,density=True,stacked=True, facecolor='r',histtype= 'bar',edgecolor='k',linewidth=2, alpha=0.75)
-        plt.grid(True)
-        #plt.ylim(0,100)
-        plt.tick_params(labelsize =20,#  Размер подписи
+    plt.figure(figsize=(15,7))
+    plt.hist(l[ycentr,xcentr],bins='auto',density=True,stacked=True, facecolor='r',histtype= 'bar',edgecolor='k',linewidth=2, alpha=0.75)
+    plt.grid(True)
+    #plt.ylim(0,100)
+    plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
-    except:
-        pass
-    try:
-        plt.figure(figsize=(15,7))
-        plt.hist(l[ycentr],bins=50,density=True,stacked=True, facecolor='r',histtype= 'bar',edgecolor='k',linewidth=2, alpha=0.75)
-        plt.grid(True)
-        #plt.ylim(0,100)
-        plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    except:
-        pass
-    try:
-        plt.figure(figsize=(15,7))
-        plt.hist2d(l[xcentr],l[ycentr],bins = 10, cmap ="gray")
-        plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    except:
-        pass
+    
     eng = matlab.engine.start_matlab()
     try:
         image=eng.imcontour(imagesource,1)
