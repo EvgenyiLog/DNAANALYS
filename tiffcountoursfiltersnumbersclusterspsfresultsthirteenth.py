@@ -1,4 +1,11 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[ ]:
+
+
 from PIL import Image
+from PIL import ImageOps
 import numpy as np
 import matplotlib.pyplot as plt
 #from libtiff import TIFF
@@ -298,7 +305,7 @@ def localstdmean(image,N):
     
 
 from sklearn.decomposition import FastICA,PCA,KernelPCA
-from skimage.features import hessian_matrix, hessian_matrix_eigvals
+from skimage.feature import hessian_matrix, hessian_matrix_eigvals
 def filtration(image,path):
     'path to file correlate'
     'image filtration'
@@ -413,8 +420,7 @@ def filtration(image,path):
     except:
         pass
 
-     except:
-        pass
+     
     
     try:
         psnr=cv2.PSNR(hlpfilt,hlpfilt.T)
@@ -469,17 +475,19 @@ def filtration(image,path):
     #plt.grid(True)
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
-    
-    transformer = KernelPCA(n_components=hlpfilt.shape[0]-1, kernel='rbf')
-    hlpfilt_new=transformer.fit_transform(hlpfilt)
-    compresed=transformer.inverse_transform(hlpfilt_new)
-    compreseds=cv2.cvtColor(compressed, cv2.COLOR_GRAY2BGR)
-    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_compresedkernelpca.jpg",compreseds)
-    plt.figure(figsize=(15,7))
-    plt.imshow(compresed[0:1000,0:1000],cmap='gray',vmax=compressed.max(),vmin=compressed.min())
-    #plt.grid(True)
-    plt.tick_params(labelsize =20,#  Размер подписи
+    try:
+        transformer = KernelPCA(n_components=hlpfilt.shape[0]-1, kernel='rbf')
+        hlpfilt_new=transformer.fit_transform(hlpfilt)
+        compresed=transformer.inverse_transform(hlpfilt_new)
+        compreseds=cv2.cvtColor(compressed, cv2.COLOR_GRAY2BGR)
+        cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_compresedkernelpca.jpg",compreseds)
+        plt.figure(figsize=(15,7))
+        plt.imshow(compresed[0:1000,0:1000],cmap='gray',vmax=compressed.max(),vmin=compressed.min())
+        #plt.grid(True)
+        plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
+    except:
+        pass
     
     
     entr_img = entropy(hlpfilt, disk(1))
@@ -493,7 +501,67 @@ def filtration(image,path):
 
     return hlpfilt
 
-from skimage.features import hessian_matrix, hessian_matrix_eigvals
+from tensorflow.keras import layers
+
+
+def get_model(img_size, num_classes):
+    inputs = keras.Input(shape=img_size + (3,))
+
+    ### [First half of the network: downsampling inputs] ###
+
+    # Entry block
+    x = layers.Conv2D(32, 3, strides=2, padding="same")(inputs)
+    x = layers.BatchNormalization()(x)
+    x = layers.Activation("relu")(x)
+
+    previous_block_activation = x  # Set aside residual
+
+    # Blocks 1, 2, 3 are identical apart from the feature depth.
+    for filters in [64, 128, 256]:
+        x = layers.Activation("relu")(x)
+        x = layers.SeparableConv2D(filters, 3, padding="same")(x)
+        x = layers.BatchNormalization()(x)
+
+        x = layers.Activation("relu")(x)
+        x = layers.SeparableConv2D(filters, 3, padding="same")(x)
+        x = layers.BatchNormalization()(x)
+
+        x = layers.MaxPooling2D(3, strides=2, padding="same")(x)
+
+        # Project residual
+        residual = layers.Conv2D(filters, 1, strides=2, padding="same")(
+            previous_block_activation
+        )
+        x = layers.add([x, residual])  # Add back residual
+        previous_block_activation = x  # Set aside next residual
+
+    ### [Second half of the network: upsampling inputs] ###
+
+    for filters in [256, 128, 64, 32]:
+        x = layers.Activation("relu")(x)
+        x = layers.Conv2DTranspose(filters, 3, padding="same")(x)
+        x = layers.BatchNormalization()(x)
+
+        x = layers.Activation("relu")(x)
+        x = layers.Conv2DTranspose(filters, 3, padding="same")(x)
+        x = layers.BatchNormalization()(x)
+
+        x = layers.UpSampling2D(2)(x)
+
+        # Project residual
+        residual = layers.UpSampling2D(2)(previous_block_activation)
+        residual = layers.Conv2D(filters, 1, padding="same")(residual)
+        x = layers.add([x, residual])  # Add back residual
+        previous_block_activation = x  # Set aside next residual
+
+    # Add a per-pixel classification layer
+    outputs = layers.Conv2D(num_classes, 3, activation="softmax", padding="same")(x)
+
+    # Define the model
+    model = keras.Model(inputs, outputs)
+    return model
+
+from skimage.feature import hessian_matrix, hessian_matrix_eigvals
 def detect_ridges(gray, sigma=3.0):
     hxx, hyy, hxy = hessian_matrix(gray, sigma)
     i1, i2 = hessian_matrix_eigvals(hxx, hxy, hyy)
@@ -513,20 +581,24 @@ from skimage.measure import find_contours
 def countourfind(image):
     imagesource=image
     'поиск контуров'
-    imagemax,imagemin=detect_ridges(image, sigma=1.0)
-    plt.figure(figsize=(15, 7))
-    plt.imshow(imagemax[0:1000,0:1000], cmap=plt.cm.gray,vmax=image.max(),vmin=image.min())
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    
-    plt.figure(figsize=(15, 7))
-    plt.imshow(imagemin[0:1000,0:1000], cmap=plt.cm.gray,vmax=image.max(),vmin=image.min())
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    
-    ridge_filter = cv2.ximgproc.RidgeDetectionFilter_create()
-    ridges = ridge_filter.getRidgeFilteredImage(image)
     try:
+        imagemax,imagemin=detect_ridges(image, sigma=1.0)
+        plt.figure(figsize=(15, 7))
+        plt.imshow(imagemax[0:1000,0:1000], cmap=plt.cm.gray,vmax=image.max(),vmin=image.min())
+        plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    
+        plt.figure(figsize=(15, 7))
+        plt.imshow(imagemin[0:1000,0:1000], cmap=plt.cm.gray,vmax=image.max(),vmin=image.min())
+        plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    except:
+        pass
+    
+    
+    try:
+        ridge_filter = cv2.ximgproc.RidgeDetectionFilter_create()
+        ridges = ridge_filter.getRidgeFilteredImage(image)
         plt.figure(figsize=(15, 7))
         plt.imshow(ridges[0:1000,0:1000], cmap=plt.cm.gray,vmax=image.max(),vmin=image.min())
         plt.tick_params(labelsize =20,#  Размер подписи
@@ -615,6 +687,40 @@ def countourfind(image):
     autoencoder.fit(x_train, x_train,epochs=10,batch_size=512)
     edges=autoencoder.predict(x_train)
     edges=np.asarray(edges,dtype=np.uint8)
+    try:
+        # Free up RAM in case the model definition cells were run multiple times
+        keras.backend.clear_session()
+        r=cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
+        # Build model
+        model = get_model(r.size, 3)
+        model.summary()
+        model.compile(optimizer="rmsprop", loss="sparse_categorical_crossentropy")
+
+        callbacks = [
+        keras.callbacks.ModelCheckpoint("C:/Users/evgen/Downloads/segmentation.h5", save_best_only=True)
+        ]
+
+        # Train the model, doing validation at the end of each epoch.
+        epochs = 5
+        model.fit(r, epochs=epochs, validation_data=r, callbacks=callbacks)
+        val_preds = model.predict(r)
+        plt.figure(figsize=(15,7))
+        plt.imshow(val_preds[0:1000,0:1000],cmap='gray',vmax=val_preds.max(),vmin=val_preds.min())
+        #plt.grid(True)
+        plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    
+        mask = np.argmax(val_preds, axis=-1)
+        mask = np.expand_dims(mask, axis=-1)
+        img = ImageOps.autocontrast(keras.utils.array_to_img(mask))
+        plt.figure(figsize=(15,7))
+        plt.imshow(img[0:1000,0:1000],cmap='gray',vmax=img.max(),vmin=img.min())
+        #plt.grid(True)
+        plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    except:
+        pass
+    
     plt.figure(figsize=(15,7))
     plt.imshow(edges[0:1000,0:1000],cmap='gray',vmax=edges.max(),vmin=edges.min())
     #plt.grid(True)
@@ -910,3 +1016,16 @@ def main():
     
 if __name__ == "__main__":
     main()
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
