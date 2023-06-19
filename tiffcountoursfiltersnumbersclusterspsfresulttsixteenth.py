@@ -690,17 +690,20 @@ def countourfind(image):
     except:
         pass
 
-    contours = measure.find_contours(image, 0.8)
+    
     plt.figure(figsize=(15, 7))
     plt.imshow(image[0:1000,0:1000], cmap=plt.cm.gray,vmax=image.max(),vmin=image.min())
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
-    
-    plt.figure(figsize=(15, 7))
-    for contour in contours:
-        plt.plot(contour[0:1000, 1], contour[0:1000, 0], linewidth=2)
-        plt.tick_params(labelsize =20,#  Размер подписи
+    try:
+        contours = measure.find_contours(image, 0.8)
+        plt.figure(figsize=(15, 7))
+        for contour in contours:
+            plt.plot(contour[0:1000, 1], contour[0:1000, 0], linewidth=2)
+            plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
+    except:
+        pass
     light_white =(255, 255, 247)
     dark_white = (225, 217, 209)
     imagergb= cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
@@ -1152,6 +1155,7 @@ def main():
     print(f'Value max ={v.max()}')
     print(f'Value mean ={v.mean()}')
     print(f'Value std ={v.std()}')
+    image=cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
     countourfind(image)
     
     
