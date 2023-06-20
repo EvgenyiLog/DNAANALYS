@@ -251,10 +251,10 @@ def imageplot3d(image):
     x = np.linspace(0, image.shape[1], image.shape[1])
     y = np.linspace(0, image.shape[0], image.shape[0])
     # full coordinate arrays
-    xx, yy = np.meshgrid(x, y)
+    xx, yy = np.ogrid[0:image.shape[0],0:image.shape[1]]
     fig = plt.figure(figsize=(15,7))          #create a canvas, tell matplotlib it's 3d
     ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(xs = xx, ys = yy, zs = image)
+    ax.plot_surface(xx,yy,image)
     ax.grid(True)
     
     
