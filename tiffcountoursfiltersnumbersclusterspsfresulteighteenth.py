@@ -873,7 +873,37 @@ def countourfind(image):
     r=cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
     cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_edges.jpg",r)
     #cv2.imwrite("C:/Users/Евгений/Downloads/s_1_1102_c_edges.jpg",r)
-    ret, thresh = cv2.threshold(edges, 1, 3, 0)
+    ret, thresh = cv2.threshold(edges, 1, 2, 0)
+    r=cv2.cvtColor(thresh,cv2.COLOR_GRAY2RGB)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_countour_thresh.jpg",r)
+    thresh1=cv2.adaptiveThreshold(edges,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV, 3, 1)
+    r=cv2.cvtColor(thresh1,cv2.COLOR_GRAY2RGB)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_countour_threshadapt.jpg",r)
+    contours1, hierarchy1 = cv2.findContours(thresh1, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    xcentra=[]
+    ycentra=[]
+    areasa=[]
+    perimetersa = []
+    for i in contours1:
+        M = cv2.moments(i)
+        if M['m00'] != 0:
+            cx = int(M['m10']/M['m00'])
+            cy = int(M['m01']/M['m00'])
+            xcentra.append(cx)
+            ycentra.append(cy)
+
+    print('Количество')
+    print(len(xcentra))
+    print()
+    d={'xcentr':xcentra,'ycentr':ycentra,'areas': areasa,'perimeters':perimetersa}
+     
+    df=pd.DataFrame(data=d)
+    
+    
+    
+    df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationadapt.csv")
+    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationadapt.xlsx") 
+
     r=cv2.cvtColor(thresh,cv2.COLOR_GRAY2RGB)
     cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_countour_thresh.jpg",r)
     
