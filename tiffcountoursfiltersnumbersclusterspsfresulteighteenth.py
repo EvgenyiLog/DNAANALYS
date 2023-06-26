@@ -471,7 +471,17 @@ def process(img):
 
     return work_img, threshold            
                      
-
+def corrfft(image1,image2):
+    image1=np.uint8(image1)
+    image2=np.uint8(image2)
+    dft1 = cv2.dft(np.float32(image1),flags = cv2.DFT_COMPLEX_OUTPUT)
+    dft2 = cv2.dft(np.float32(image2),flags = cv2.DFT_COMPLEX_OUTPUT)
+    corr=cv2.multiply(dft1,dft2)
+    plt.figure(figsize=(15,7))
+    plt.imshow(corr[0:1000,0:1000],cmap='gray',vmax=corr.max(),vmin=corr.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
     
 
 from sklearn.decomposition import FastICA,PCA
@@ -547,10 +557,10 @@ def filtration(image,path):
     image2=np.asarray(image2,dtype=np.uint8)
     
     #normcorr(hlp,image2)
-    #res = cv2.matchTemplate(hlp,image2,'cv.TM_CCORR_NORMED')
-    #r=cv2.cvtColor(res, cv2.COLOR_GRAY2RGB) 
-    #cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_a_normcorr2.jpg",r)
-    #min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+    res = cv2.matchTemplate(hlp,image2,'cv.TM_CCORR_NORMED')
+    r=cv2.cvtColor(res, cv2.COLOR_GRAY2RGB) 
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_a_normcorr2.jpg",r)
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
     eng = matlab.engine.start_matlab()   
     r=eng.corr2(hlp,image2)
     hlp=hlp-hlp.mean()-r*image2
@@ -566,6 +576,7 @@ def filtration(image,path):
     cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_cfilt.jpg",hlpfilt)
     #cv2.imwrite("C:/Users/Евгений/Downloads/s_1_1102_cfilt.jpg",hlpfilt)
     normcorr(hlp[0:100,0:100],image2[0:100,0:100])
+    corrfft(hlp,image2)
     r=eng.normxcorr2(hlp,image2)
     r=np.asarray(r,dtype=np.uint8)
     print(r.shape)
