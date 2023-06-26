@@ -305,7 +305,7 @@ def localstdmean(image,N):
     print(f'image mean ={image.mean()}')
     print(f'image std ={image.std()}')
 
-
+from sklearn.decomposition import FastICA,PCA,KernelPCA
 def compresed(hlpfilt):
     relative_rank = 0.9
     max_rank = int(relative_rank * min(hlpfilt.shape[0], hlpfilt.shape[1]))
@@ -395,8 +395,81 @@ def normcorr(image1,image2):
         r=correlation
     cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_a_normxcorr.jpg",r)     
 
-            
-            
+def imageground(image):
+    # Вычисляем маску фона
+    image=np.uint8(image)
+    _, thresh = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+    # Убираем шум
+    kernel = np.ones((2, 2), np.uint16)
+    opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=50)
+    background=opening
+    backgrounds=cv2.cvtColor( background, cv2.COLOR_GRAY2BGR) 
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_background1.jpg",backgrounds)
+    plt.figure(figsize=(15, 7))
+    plt.imshow(background[0:1000,0:1000], cmap=plt.cm.gray,vmax=background.max(),vmin=background.min())
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+
+    # создаем маску фона
+    sure_bg = cv2.dilate(opening, kernel, iterations=20) 
+
+
+    dist_transform = cv2.distanceTransform(opening, cv2.DIST_L2, 5)
+    _, sure_fg = cv2.threshold(dist_transform, 0.7 * dist_transform.max(), 255, 0)  
+
+    foreground=sure_fg
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_foreground.jpg",foreground)
+    plt.figure(figsize=(15, 7))
+    plt.imshow(foreground[0:1000,0:1000], cmap=plt.cm.gray,vmax=foreground.max(),vmin=foreground.min())
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    
+
+    # Вычисляем "неопределенный регион" из вычисленных фона и переднего плана
+    # В большинстве случаев это просто фон, т.к. передний план считается плохо.
+    sure_fg = np.uint8(sure_fg)
+    unknown = cv2.subtract(sure_bg, sure_fg)
+
+    # Размечаем маркеры. Они будут использованы для вычисления фона алгоритмом watershed
+    _, markers = cv2.connectedComponents(sure_fg)
+    # Добавляем единичку ко всем значениям, чтобы они были больше 0. Он отвечает за "неизвестную" область.
+    markers = markers + 1
+    # Добавляем "неизвестную" область на маркеры
+    markers[unknown == 255] = 0
+
+    # собственно считаем
+    markers = cv2.watershed(image, markers)
+    # и рисуем наши маркеры на изображении
+    #img[markers == -1] = [255, 0, 0]
+
+
+def process(img):
+    work_img = img.copy()
+
+    # считаем маску
+    _, threshold = cv2.threshold(work_img, 30, 200, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    # ищем на маске контуры
+    contours, hierarchy = cv2.findContours(threshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    max_area = 0
+    max_contour = []
+
+    # ищем самый большой из найденных контуров
+    for cnt in contours:
+        approx = cv2.approxPolyDP(cnt, 0.1 * cv2.arcLength(cnt, True), True)
+
+        cnt_area = cv2.contourArea(cnt)
+        # обязательно проверяем кол-во точек.
+        # Иначе, часто, получается что самая большая фигура -
+        # это треугольник через всю диагональ изображения
+        if len(approx) > 3 and cnt_area > max_area:
+            max_area = cnt_area
+            max_contour = approx
+
+    # рисуем самый большой контур на изображении
+    cv2.drawContours(work_img, [max_contour], 0, (255, 0, 0), 2)
+
+    return work_img, threshold            
                      
 
     
@@ -510,11 +583,12 @@ def filtration(image,path):
     
     r=cv2.cvtColor(np.uint8(imageh), cv2.COLOR_GRAY2RGB) 
     cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_hessian.jpg",r)
-    
-    
-    #fd, hog_image = hog(np.uint8(image), orientations=8, pixels_per_cell=(16, 16),
-                    #cells_per_block=(1, 1), visualize=True, channel_axis=-1)
-    
+    try:
+        im=cv2.cvtColor(np.uint8(image), cv2.COLOR_GRAY2RGB) 
+        fd, hog_image = hog(im, orientations=8, pixels_per_cell=(16, 16),cells_per_block=(1, 1), visualize=True, channel_axis=-1)
+        cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_hog.jpg",hog_image)
+    except:
+        pass
     sigma_est =skimage.restoration.estimate_sigma(hlpfilt)
     imagew=skimage.restoration.denoise_wavelet(hlpfilt,sigma=sigma_est)
     plt.figure(figsize=(15,7))
@@ -1130,6 +1204,9 @@ def main():
     boxplot_2d(image[0:int(image.shape[0]),:],image[:,0:int(image.shape[1])],ax=ax2, whis=1.5)
     ax2.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
+    
+
+    imageground(image)
     
     plt.figure(figsize=(15,7))
     plt.imshow(image[0:1000,0:1000],cmap='gray',vmax=image.max(),vmin=image.min())
