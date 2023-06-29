@@ -988,21 +988,6 @@ def countourfind(image):
             ycentr.append(cy)
         r=cv2.fillPoly(image, i, color=(255, 255, 255))
             
-        (x,y), (width, height), angle= cv2.minAreaRect(i)
-        rect=cv2.minAreaRect(i)
-        box = cv2.boxPoints(rect)
-        xcentrrect.append(x)
-        ycentrrect.append(y)
-       
-        imagefill=cv2.fillPoly(mask, i, 1)
-        #print(imagefill.shape)
-        masked_image = cv2.bitwise_and(imagefill,imagesource,mask)
-        meanpixel.append(cv2.mean(masked_image))
-        #m,s=cv2.meanStdDev(masked_image)
-        sumpixel.append(np.sum(masked_image))
-        box = np.int0(box)
-        masked_imagerect=cv2.bitwise_and(cv2.rectangle(mask,box[2],box[3],1, 1),imagesource,mask)
-        sumpixelrect.append(np.sum(masked_imagerect))
         
     cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_countour_adapt.jpg",r)   
         
@@ -1010,6 +995,41 @@ def countourfind(image):
     print('Количество')
     print(len(xcentr))
     print()
+    
+    isClosed = True
+    
+    thickness=2
+    
+    color=(255,255,255)
+    
+    image3=np.zeros_like(imagesource,dtype=np.uint8)
+    
+    image4 = cv2.polylines(image3, contours,
+                      isClosed, color, thickness)
+    plt.figure(figsize=(15,7))
+    plt.imshow(image4[0:1000,0:1000],cmap='gray',vmax=image4.max(),vmin=image4.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_contours.jpg",image4)
+    for i in range(len(xcentr)):
+        image5=cv2.circle(image3, (xcentr[i], ycentr[i]), 1, (255, 255, 255), -1)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_centers.jpg",image5)
+    plt.figure(figsize=(15,7))
+    plt.imshow(image5[0:1000,0:1000],cmap='gray',vmax=image5.max(),vmin=image5.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    
+    
+    image6=cv2.fillPoly(image3,contours,color)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_cluster.jpg",image6)
+    plt.figure(figsize=(15,7))
+    plt.imshow(image6[0:1000,0:1000],cmap='gray',vmax=image6.max(),vmin=image6.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
         
         
     d={'xcentr':xcentr,'ycentr':ycentr}
@@ -1122,50 +1142,8 @@ def countourfind(image):
     
     
  
-    isClosed = True
-    image3=np.zeros((image.shape[0],image.shape[1],3))
-
-    color = (255, 255, 255)
-    image=np.asarray(image,dtype=np.uint8)
-    # Line thickness of 5 px
-    thickness = 1
- 
-    # Using cv2.polylines() method
-
-
-    image4 = cv2.polylines(image3, contours,
-                      isClosed, color, thickness)
-    plt.figure(figsize=(15,7))
-    plt.imshow(image4[0:1000,0:1000],cmap='gray',vmax=image4.max(),vmin=image4.min())
-    #plt.grid(True)
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    
-    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_contours.jpg",image4)
-    for i in range(len(xcentr)):
-        image5=cv2.circle(image3, (xcentr[i], ycentr[i]), 1, (255, 255, 255), -1)
-    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_centers.jpg",image5)
-    plt.figure(figsize=(15,7))
-    plt.imshow(image5[0:1000,0:1000],cmap='gray',vmax=image5.max(),vmin=image5.min())
-    #plt.grid(True)
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
     
     
-    image6=cv2.fillPoly(image3,contours,color)
-    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_cluster.jpg",image6)
-    plt.figure(figsize=(15,7))
-    plt.imshow(image6[0:1000,0:1000],cmap='gray',vmax=image6.max(),vmin=image6.min())
-    #plt.grid(True)
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    
-    image= cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
-    hsl=cv2.cvtColor(image,cv2.COLOR_RGB2HLS)
-    h,s,l=cv2.split(hsl)
-    
-    hsv=cv2.cvtColor(image,cv2.COLOR_RGB2HSV)
-    h,s,v=cv2.split(hsv)
     
     
     fig = plt.figure(figsize=(15,7))          #create a canvas, tell matplotlib it's 3d
@@ -1354,6 +1332,12 @@ def main():
     
 if __name__ == "__main__":
     main()
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:
