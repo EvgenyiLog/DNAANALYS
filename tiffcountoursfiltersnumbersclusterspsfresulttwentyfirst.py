@@ -560,6 +560,7 @@ def filtration(image,path):
     
     #normcorr(hlp,image2)
     res = cv2.matchTemplate(np.uint8(hlp),image2,cv2.TM_CCORR_NORMED)
+    print(f'res shape={res.shape}')
     r=cv2.cvtColor(res, cv2.COLOR_GRAY2RGB) 
     cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_a_normcorr2.jpg",r)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
@@ -1072,21 +1073,65 @@ def countourfind(image):
             bcenters.append(b[cy,cx])
             vcenters.append(v[cy,cx])
     
-    d={'lightness ':lcenters1,'value ': vcenters,'Saturation':scenters1,'hue':hcenters1,'bcenters':bcenters,'acenters':acenters}
+    d={'lightness ':lcenters1,'value ': vcenters}
+       #'bcenters':bcenters,'acenters':acenters}
     df=pd.DataFrame(data=d)
     
     
     
-    df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationhsvl.csv")
-    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationhvsl.xlsx") 
+    df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationvl.csv")
+    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationvl.xlsx")
+    
+    
+    d={'Saturation':scenters1}#'hue':hcenters1}
+       #'bcenters':bcenters,'acenters':acenters}
+    #df=pd.DataFrame(data=d)
+    
+    
+    
+    df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrations.csv")
+    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrations.xlsx") 
+    
+    
+    d={'hue':hcenters1}
+       #'bcenters':bcenters,'acenters':acenters}
+    #df=pd.DataFrame(data=d)
+    
+    
+    
+    df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationh.csv")
+    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationh.xlsx") 
+    
+    d=  {'bcenters':bcenters,'acenters':acenters}
+     
+    df=pd.DataFrame(data=d)
+    
+    
+    
+    df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationab.csv")
+    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationab.xlsx") 
     
     for i in contours:
         M = cv2.moments(i)
         (x,y), (width, height), angle= cv2.minAreaRect(i)
-        rect=cv2.minAreaRect(i)
-        box = cv2.boxPoints(rect)
         xcentrrect.append(x)
         ycentrrect.append(y)
+        
+    
+    d={'xcentrrect':xcentrrect,'ycentrrect':ycentrrect}
+    df=pd.DataFrame(data=d)
+    
+    
+    
+    df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationrect.csv")
+    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationrect.xlsx") 
+    
+    
+    
+    for i in contours:
+        M = cv2.moments(i)
+        rect=cv2.minAreaRect(i)
+        box = cv2.boxPoints(rect)
         imagefill=cv2.fillPoly(mask, i, 1)
         #print(imagefill.shape)
         masked_image = cv2.bitwise_and(imagefill,imagesource,mask)
@@ -1096,14 +1141,6 @@ def countourfind(image):
         box = np.int0(box)
         masked_imagerect=cv2.bitwise_and(cv2.rectangle(mask,box[2],box[3],1, 1),imagesource,mask)
         sumpixelrect.append(np.sum(masked_imagerect))
-    
-    d={'xcentrrect':xcentrrect,'ycentrrect':ycentrrect}
-    df=pd.DataFrame(data=d)
-    
-    
-    
-    df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationrect.csv")
-    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationrect.xlsx") 
     
     d={'meanpixel': meanpixel,'sumpixel':sumpixel,'sumpixelrect': sumpixelrect}
     df=pd.DataFrame(data=d)
@@ -1332,6 +1369,12 @@ def main():
     
 if __name__ == "__main__":
     main()
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:
