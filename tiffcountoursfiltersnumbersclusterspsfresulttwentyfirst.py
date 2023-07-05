@@ -1127,7 +1127,7 @@ def countourfind(image):
     df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationrect.xlsx") 
     
     
-    
+    print(contours.shape)
     for i in contours:
         M = cv2.moments(i)
         rect=cv2.minAreaRect(i)
@@ -1145,7 +1145,7 @@ def countourfind(image):
     df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationsumpixelrect.csv")
     df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationsumpixelrect.xlsx")
     
-    
+    print(contours.shape)
     for i in contours:
         M = cv2.moments(i)
         rect=cv2.minAreaRect(i)
