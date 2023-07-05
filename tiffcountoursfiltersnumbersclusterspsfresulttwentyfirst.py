@@ -1055,8 +1055,9 @@ def countourfind(image):
     
     
     df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationarp.csv")
-    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationarp.xlsx") 
-    
+    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationarp.xlsx")
+    countours=np.asarray(list(contours))
+    #print(countours.shape)
     for i in contours:
         M = cv2.moments(i)
         if M['m00'] != 0:
@@ -1111,6 +1112,10 @@ def countourfind(image):
     df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationab.csv")
     df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationab.xlsx") 
     
+    
+    
+        
+    
     for i in contours:
         M = cv2.moments(i)
         (x,y), (width, height), angle= cv2.minAreaRect(i)
@@ -1127,7 +1132,24 @@ def countourfind(image):
     df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationrect.xlsx") 
     
     
-    print(contours.shape)
+    for i in range(1000):
+        M = cv2.moments(i)
+        rect=cv2.minAreaRect(countours[i])
+        box = cv2.boxPoints(rect)
+       
+        box = np.int0(box)
+        masked_imagerect=cv2.bitwise_and(cv2.rectangle(mask,box[2],box[3],1, 1),imagesource,mask)
+        sumpixelrect.append(np.sum(masked_imagerect))
+    
+    d={'sumpixelrect': sumpixelrect}
+    df=pd.DataFrame(data=d)
+    
+    
+    
+    df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationsumpixelrect1000.csv")
+    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationsumpixelrect1000.xlsx")
+        
+        
     for i in contours:
         M = cv2.moments(i)
         rect=cv2.minAreaRect(i)
@@ -1137,7 +1159,7 @@ def countourfind(image):
         masked_imagerect=cv2.bitwise_and(cv2.rectangle(mask,box[2],box[3],1, 1),imagesource,mask)
         sumpixelrect.append(np.sum(masked_imagerect))
     
-    d={'meanpixel': meanpixel,'sumpixel':sumpixel,'sumpixelrect': sumpixelrect}
+    d={'sumpixelrect': sumpixelrect}
     df=pd.DataFrame(data=d)
     
     
@@ -1145,7 +1167,7 @@ def countourfind(image):
     df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationsumpixelrect.csv")
     df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationsumpixelrect.xlsx")
     
-    print(contours.shape)
+    
     for i in contours:
         M = cv2.moments(i)
         rect=cv2.minAreaRect(i)
