@@ -978,6 +978,7 @@ def countourfind(image):
     sumpixelrect=[]
     sumpixel=[]
     meanpixel=[]
+    stdpixel=[]
 
     
     for i in contours:
@@ -1133,7 +1134,6 @@ def countourfind(image):
     
     
     for i in range(1000):
-        M = cv2.moments(i)
         rect=cv2.minAreaRect(countours[i])
         box = cv2.boxPoints(rect)
        
@@ -1148,10 +1148,34 @@ def countourfind(image):
     
     df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationsumpixelrect1000.csv")
     df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationsumpixelrect1000.xlsx")
+                
+                
+                
+    for i in range(1000):
+        imagefill=cv2.fillPoly(mask, countours[i], 1)
+        #print(imagefill.shape)
+        masked_image = cv2.bitwise_and(imagefill,imagesource,mask)
+        meanpixel.append(cv2.mean(masked_image))
+        m,s=cv2.meanStdDev(masked_image)
+        stdpixel.append(s)
+        sumpixel.append(np.sum(masked_image))
+       
+    
+    d={'meanpixel': meanpixel,'sumpixel':sumpixel,'stdpixel':stdpixel}
         
+
+    df=pd.DataFrame(data=d)
+    
+    
+    
+    df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationsumpixel1000.csv")
+    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationsumpixel1000.xlsx")
+    sumpixelrect=[]
+    sumpixel=[]
+    meanpixel=[]
+    stdpixel=[]   
         
     for i in contours:
-        M = cv2.moments(i)
         rect=cv2.minAreaRect(i)
         box = cv2.boxPoints(rect)
        
@@ -1169,9 +1193,6 @@ def countourfind(image):
     
     
     for i in contours:
-        M = cv2.moments(i)
-        rect=cv2.minAreaRect(i)
-        box = cv2.boxPoints(rect)
         imagefill=cv2.fillPoly(mask, i, 1)
         #print(imagefill.shape)
         masked_image = cv2.bitwise_and(imagefill,imagesource,mask)
