@@ -290,11 +290,11 @@ def localstdmean(image,N):
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     noises=cv2.cvtColor(noise, cv2.COLOR_GRAY2BGR) 
-    #cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_noise.jpg",noises)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_noise.jpg",noises)
     background=scipy.signal.convolve2d(im, kernel, mode="same")
     background=np.asarray(background,dtype=np.uint8)
     backgrounds=cv2.cvtColor( background, cv2.COLOR_GRAY2BGR) 
-    #cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_background.jpg",backgrounds)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_background.jpg",backgrounds)
     plt.figure(figsize=(15, 7))
     plt.imshow(background[0:1000,0:1000], cmap=plt.cm.gray,vmax=background.max(),vmin=background.min())
     plt.tick_params(labelsize =20,#  Размер подписи
@@ -394,7 +394,7 @@ def normcorr(image1,image2):
         r=cv2.cvtColor(correlation, cv2.COLOR_GRAY2BGR)
     except:
         r=correlation
-    #cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_a_normxcorr.jpg",r)     
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_a_normxcorr.jpg",r)     
 
 def imageground(image):
     # Вычисляем маску фона
@@ -406,7 +406,7 @@ def imageground(image):
     opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=50)
     background=opening
     backgrounds=cv2.cvtColor( background, cv2.COLOR_GRAY2BGR) 
-    #cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_background1.jpg",backgrounds)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_background1.jpg",backgrounds)
     plt.figure(figsize=(15, 7))
     plt.imshow(background[0:1000,0:1000], cmap=plt.cm.gray,vmax=background.max(),vmin=background.min())
     plt.tick_params(labelsize =20,#  Размер подписи
@@ -420,7 +420,7 @@ def imageground(image):
     _, sure_fg = cv2.threshold(dist_transform, 0.7 * dist_transform.max(), 255, 0)  
 
     foreground=sure_fg
-    #.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_foreground.jpg",foreground)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_foreground.jpg",foreground)
     plt.figure(figsize=(15, 7))
     plt.imshow(foreground[0:1000,0:1000], cmap=plt.cm.gray,vmax=foreground.max(),vmin=foreground.min())
     plt.tick_params(labelsize =20,#  Размер подписи
@@ -525,9 +525,9 @@ def filtration(image,path):
     image=np.asarray(image,dtype=np.uint8)
     image=cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
     image= cv2.bilateralFilter(image,1,1,1)
-    #cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_wiener.jpg",image)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_wiener.jpg",image)
     image=cv2.fastNlMeansDenoising(image,None,1,1,3)
-    #cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_fastNlMeansDenoising.jpg",image)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_fastNlMeansDenoising.jpg",image)
     #image=cv2.fastNlMeansDenoising(image,None,1,1,3)
     image=cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
     clahe = cv2.createCLAHE(clipLimit=5., tileGridSize=(2,2))
@@ -562,7 +562,7 @@ def filtration(image,path):
     res = cv2.matchTemplate(np.uint8(hlp),image2,cv2.TM_CCORR_NORMED)
     print(f'res shape={res.shape}')
     r=cv2.cvtColor(res, cv2.COLOR_GRAY2RGB) 
-    #cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_a_normcorr2.jpg",r)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_a_normcorr2.jpg",r)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
     eng = matlab.engine.start_matlab()   
     r=eng.corr2(hlp,image2)
@@ -572,7 +572,7 @@ def filtration(image,path):
         hlpf=hlp-hlp.mean()-cv2.multiply(res,image2)
         hlpfilt=np.asarray(hlpf,dtype=np.uint8)
         hlpfilt=cv2.cvtColor(hlpfilt,cv2.COLOR_GRAY2RGB)
-        #cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_cfilt1.jpg",hlpfilt)
+        cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_cfilt1.jpg",hlpfilt)
     except:
         pass
     
@@ -584,7 +584,7 @@ def filtration(image,path):
     hlpfilt=cv2.cvtColor(hlpfilt,cv2.COLOR_GRAY2RGB)
     #hlp=scipy.ndimage.percentile_filter(hlp,95)
     
-    #cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_cfilt.jpg",hlpfilt)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_cfilt.jpg",hlpfilt)
     #cv2.imwrite("C:/Users/Евгений/Downloads/s_1_1102_cfilt.jpg",hlpfilt)
     normcorr(hlp[0:100,0:100],image2[0:100,0:100])
     corrfft(hlp,image2)
@@ -593,7 +593,7 @@ def filtration(image,path):
     print(r.shape)
     
     r=cv2.cvtColor(r, cv2.COLOR_GRAY2RGB) 
-    #cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_a_normxcorr2.jpg",r)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_a_normxcorr2.jpg",r)
     #cv2.imwrite("C:/Users/Евгений/Downloads/s_1_1102_c_a_normxcorr2.jpg",r)
     eng.quit()
     hlpfilt=cv2.cvtColor(hlpfilt,cv2.COLOR_RGB2GRAY)
@@ -605,11 +605,11 @@ def filtration(image,path):
                     color = 'k')   #  Цвет делений
     
     r=cv2.cvtColor(np.uint8(imageh), cv2.COLOR_GRAY2RGB) 
-    #cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_hessian.jpg",r)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_hessian.jpg",r)
     try:
         im=cv2.cvtColor(np.uint8(image), cv2.COLOR_GRAY2RGB) 
         fd, hog_image = hog(im, orientations=8, pixels_per_cell=(16, 16),cells_per_block=(1, 1), visualize=True, channel_axis=-1)
-        #cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_hog.jpg",hog_image)
+        cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_hog.jpg",hog_image)
     except:
         pass
     sigma_est =skimage.restoration.estimate_sigma(hlpfilt)
@@ -894,21 +894,20 @@ def countourfind(image):
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     r=cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
-    #cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_edges.jpg",r)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_edges.jpg",r)
     #cv2.imwrite("C:/Users/Евгений/Downloads/s_1_1102_c_edges.jpg",r)
     ret, thresh = cv2.threshold(edges, 1, 2, 0)
     r=cv2.cvtColor(thresh,cv2.COLOR_GRAY2RGB)
-    #cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_countour_thresh.jpg",r)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_countour_thresh.jpg",r)
     thresh1=cv2.adaptiveThreshold(edges,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV, 3, 1)
     r=cv2.cvtColor(thresh1,cv2.COLOR_GRAY2RGB)
-    #cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_countour_threshadapt.jpg",r)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_countour_threshadapt.jpg",r)
     contours1, hierarchy1 = cv2.findContours(thresh1, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     xcentra=[]
     ycentra=[]
     areasa=[]
     perimetersa = []
     image=np.zeros((imagesource.shape[0],imagesource.shape[1],3),dtype=np.uint8)
-    ''''
     for i in contours1:
         M = cv2.moments(i)
         if M['m00'] != 0:
@@ -940,10 +939,9 @@ def countourfind(image):
     
     df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationadaptarp.csv")
     df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationadaptarp.xlsx")
-    '''
 
-    #r=cv2.cvtColor(thresh,cv2.COLOR_GRAY2RGB)
-    #cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_countour_thresh.jpg",r)
+    r=cv2.cvtColor(thresh,cv2.COLOR_GRAY2RGB)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_countour_thresh.jpg",r)
     
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     
@@ -980,7 +978,11 @@ def countourfind(image):
     sumpixelrect=[]
     sumpixel=[]
     meanpixel=[]
-    ''''
+    stdpixel=[]
+    widthrect=[]
+    heigthrect=[]
+    anglerect=[]
+
     
     for i in contours:
         M = cv2.moments(i)
@@ -1057,8 +1059,9 @@ def countourfind(image):
     
     
     df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationarp.csv")
-    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationarp.xlsx") 
-    
+    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationarp.xlsx")
+    countours=np.asarray(list(contours))
+    #print(countours.shape)
     for i in contours:
         M = cv2.moments(i)
         if M['m00'] != 0:
@@ -1113,14 +1116,22 @@ def countourfind(image):
     df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationab.csv")
     df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationab.xlsx") 
     
+    
+    
+        
+    
     for i in contours:
         M = cv2.moments(i)
         (x,y), (width, height), angle= cv2.minAreaRect(i)
         xcentrrect.append(x)
         ycentrrect.append(y)
+        widthrect.append(width)
+        heigthrect.append(height)
+        anglerect.append(angle)
+        
         
     
-    d={'xcentrrect':xcentrrect,'ycentrrect':ycentrrect}
+    d={'xcentrrect':xcentrrect,'ycentrrect':ycentrrect,'widthrect':widthrect,'heigthrect':heigthrect,'anglerect':anglerect}
     df=pd.DataFrame(data=d)
     
     
@@ -1128,10 +1139,50 @@ def countourfind(image):
     df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationrect.csv")
     df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationrect.xlsx") 
     
-    '''
     
+    for i in range(1000):
+        rect=cv2.minAreaRect(countours[i])
+        box = cv2.boxPoints(rect)
+       
+        box = np.int0(box)
+        masked_imagerect=cv2.bitwise_and(cv2.rectangle(mask,box[2],box[3],1, 1),imagesource,mask)
+        sumpixelrect.append(np.sum(masked_imagerect))
+    
+    d={'sumpixelrect': sumpixelrect}
+    df=pd.DataFrame(data=d)
+    
+    
+    
+    df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationsumpixelrect1000.csv")
+    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationsumpixelrect1000.xlsx")
+                
+                
+                
+    for i in range(1000):
+        imagefill=cv2.fillPoly(mask, countours[i], 1)
+        #print(imagefill.shape)
+        masked_image = cv2.bitwise_and(imagefill,imagesource,mask)
+        meanpixel.append(cv2.mean(masked_image))
+        m,s=cv2.meanStdDev(masked_image)
+        stdpixel.append(s)
+        sumpixel.append(np.sum(masked_image))
+       
+    
+    d={'meanpixel': meanpixel,'sumpixel':sumpixel,'stdpixel':stdpixel}
+        
+
+    df=pd.DataFrame(data=d)
+    
+    
+    
+    df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationsumpixel1000.csv")
+    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationsumpixel1000.xlsx")
+    sumpixelrect=[]
+    sumpixel=[]
+    meanpixel=[]
+    stdpixel=[]   
+        
     for i in contours:
-        M = cv2.moments(i)
         rect=cv2.minAreaRect(i)
         box = cv2.boxPoints(rect)
        
@@ -1139,19 +1190,16 @@ def countourfind(image):
         masked_imagerect=cv2.bitwise_and(cv2.rectangle(mask,box[2],box[3],1, 1),imagesource,mask)
         sumpixelrect.append(np.sum(masked_imagerect))
     
-    d={'meanpixel': meanpixel,'sumpixel':sumpixel,'sumpixelrect': sumpixelrect}
+    d={'sumpixelrect': sumpixelrect}
     df=pd.DataFrame(data=d)
     
     
     
-    df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationsumpixelrect1.csv")
-    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationsumpixelrect1.xlsx")
+    df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationsumpixelrect.csv")
+    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationsumpixelrect.xlsx")
     
     
     for i in contours:
-        M = cv2.moments(i)
-        rect=cv2.minAreaRect(i)
-        box = cv2.boxPoints(rect)
         imagefill=cv2.fillPoly(mask, i, 1)
         #print(imagefill.shape)
         masked_image = cv2.bitwise_and(imagefill,imagesource,mask)
@@ -1165,8 +1213,8 @@ def countourfind(image):
     
     
     
-    df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationsumpixel1.csv")
-    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationsumpixel1.xlsx")
+    df.to_csv("C:/Users/evgen/Downloads/contourafterfiltrationsumpixel.csv")
+    df.to_excel("C:/Users/evgen/Downloads/contourafterfiltrationsumpixel.xlsx")
     
     
     plt.figure(figsize =(15, 7))
@@ -1377,7 +1425,7 @@ def main():
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     edges=countourfind(image)
-    #findcounturnewmethod(edges)
+    findcounturnewmethod(edges)
     
     
     
