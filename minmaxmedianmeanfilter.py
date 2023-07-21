@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[13]:
 
 
 from PIL import Image
@@ -52,6 +52,7 @@ from skimage.morphology import disk
 from matplotlib import pyplot as plt
 from matplotlib.patches import Rectangle
 from matplotlib.lines import Line2D
+import mahotas
 
 
 def readimage(path):
@@ -122,73 +123,76 @@ def localstdmean(image,N):
     print(f'image std ={image.std()}')
     
     
-def cohernceimage(image1,image2):
-    # Compute the discrete Fourier Transform of the image
-    fourier1 = cv2.dft(np.float32(image1), flags=cv2.DFT_COMPLEX_OUTPUT)
- 
-    # Shift the zero-frequency component to the center of the spectrum
-    fourier_shift1 = np.fft.fftshift(fourier1)
- 
-    # calculate the magnitude of the Fourier Transform
-    magnitude1 = cv2.magnitude(fourier_shift1[:,:,0],fourier_shift1[:,:,1])
-    # Compute the discrete Fourier Transform of the image
-    fourier2 = cv2.dft(np.float32(image2), flags=cv2.DFT_COMPLEX_OUTPUT)
- 
-    # Shift the zero-frequency component to the center of the spectrum
-    fourier_shift2 = np.fft.fftshift(fourier2)
- 
-    # calculate the magnitude of the Fourier Transform
-    magnitude2 = cv2.magnitude(fourier_shift2[:,:,0],fourier_shift2[:,:,1])
-    coherence=np.divide(np.square(np.abs(np.multiply(fourier1,fourier2.conj()))),
-                        np.multiply(np.square(np.abs(fourier1)),np.square(np.abs(fourier2))))
-    print(coherence.shape)
-    coherencex=coherence[:,:,0]
+def maximage(image):
+    imagemax=scipy.ndimage.maximum_filter(image,size=3)
     plt.figure(figsize=(15, 7))
-    plt.imshow(coherencex[0:1000,0:1000], cmap=plt.cm.gray,vmax=coherencex.max(),vmin=coherencex.min())
+    plt.imshow(imagemax[0:1000,0:1000], cmap=plt.cm.gray,vmax=imagemax.max(),vmin=imagemax.min())
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     
-    
-    xx, yy = np.ogrid[0:coherencex.shape[0],0:coherencex.shape[1]]
+    xx, yy = np.ogrid[0:imagemax.shape[0],0:imagemax.shape[1]]
     fig = plt.figure(figsize=(15,7))          #create a canvas, tell matplotlib it's 3d
     ax = fig.add_subplot(111, projection='3d')
     #ax.scatter(xs = xx, ys = yy, zs = image)
-    ax.plot_surface(xx,yy,coherencex)
-    
+    ax.plot_surface(xx,yy,imagemax)
+    ax.set_zlim(0,50)
     ax.grid(True)
-    plt.savefig("C:/Users/evgen/Downloads/3Dcoherencex.jpg")
     
     
-    coherencey=coherence[:,:,0]
+    
+def minimage(image):
+    imagemin=scipy.ndimage.minimum_filter(image,size=3)
     plt.figure(figsize=(15, 7))
-    plt.imshow(coherencey[0:1000,0:1000], cmap=plt.cm.gray,vmax=coherencey.max(),vmin=coherencey.min())
+    plt.imshow(imagemin[0:1000,0:1000], cmap=plt.cm.gray,vmax=imagemin.max(),vmin=imagemin.min())
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
-    
-    xx, yy = np.ogrid[0:coherencey.shape[0],0:coherencey.shape[1]]
+    xx, yy = np.ogrid[0:imagemin.shape[0],0:imagemin.shape[1]]
     fig = plt.figure(figsize=(15,7))          #create a canvas, tell matplotlib it's 3d
     ax = fig.add_subplot(111, projection='3d')
     #ax.scatter(xs = xx, ys = yy, zs = image)
-    ax.plot_surface(xx,yy,coherencey)
-    
+    ax.plot_surface(xx,yy,imagemin)
+    ax.set_zlim(0,50)
     ax.grid(True)
-    plt.savefig("C:/Users/evgen/Downloads/3Dcoherencey.jpg")
+    
+def medianimage(image):
+    imagemedian=scipy.ndimage.median_filter(image,size=3)
+    plt.figure(figsize=(15, 7))
+    plt.imshow(imagemedian[0:1000,0:1000], cmap=plt.cm.gray,vmax=imagemedian.max(),vmin=imagemedian.min())
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    xx, yy = np.ogrid[0:imagemedian.shape[0],0:imagemedian.shape[1]]
+    fig = plt.figure(figsize=(15,7))          #create a canvas, tell matplotlib it's 3d
+    ax = fig.add_subplot(111, projection='3d')
+    #ax.scatter(xs = xx, ys = yy, zs = image)
+    ax.plot_surface(xx,yy,imagemedian)
+    ax.set_zlim(0,50)
+    ax.grid(True)
+    
+def meanfilter(image):
+    imagemean=mahotas.mean_filter(image, 3)
+    plt.figure(figsize=(15, 7))
+    plt.imshow(imagemean[0:1000,0:1000], cmap=plt.cm.gray,vmax=imagemean.max(),vmin=imagemean.min())
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    xx, yy = np.ogrid[0:imagemean.shape[0],0:imagemean.shape[1]]
+    fig = plt.figure(figsize=(15,7))          #create a canvas, tell matplotlib it's 3d
+    ax = fig.add_subplot(111, projection='3d')
+    #ax.scatter(xs = xx, ys = yy, zs = image)
+    ax.plot_surface(xx,yy,imagemean)
+    ax.set_zlim(0,50)
+    ax.grid(True)
     
 def main():
-    image1=readimage("C:/Users/evgen/Downloads/s_1_1102_c.jpg")
-    image2=readimage("C:/Users/evgen/Downloads/s_1_1102_a.jpg")
-    cohernceimage(image1,image2)
+    image=readimage("C:/Users/evgen/Downloads/s_1_1102_c.jpg")
+    maximage(image)
+    minimage(image)
+    medianimage(image)
+    meanfilter(image)
     plt.show()
     
     
 if __name__ == "__main__":
     main()
-
-
-# In[ ]:
-
-
-
 
 
 # In[ ]:
