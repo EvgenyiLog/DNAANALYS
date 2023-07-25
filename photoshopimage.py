@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[8]:
 
 
 from PIL import Image
@@ -47,7 +47,8 @@ from skimage.metrics import peak_signal_noise_ratio
 import pandas as pd
 from skimage.filters.rank import entropy
 from skimage.morphology import disk
-
+from skimage import io, segmentation, color
+from skimage.future import graph
 
 from matplotlib import pyplot as plt
 from matplotlib.patches import Rectangle
@@ -259,6 +260,50 @@ def tiffreader(path):
     return image
 
 
+def _weight_mean_color(graph, src, dst, n):
+    """Callback to handle merging nodes by recomputing mean color.
+
+    The method expects that the mean color of `dst` is already computed.
+
+    Parameters
+    ----------
+    graph : RAG
+        The graph under consideration.
+    src, dst : int
+        The vertices in `graph` to be merged.
+    n : int
+        A neighbor of `src` or `dst` or both.
+
+    Returns
+    -------
+    data : dict
+        A dictionary with the `"weight"` attribute set as the absolute
+        difference of the mean color between node `dst` and `n`.
+    """
+
+    diff = graph.nodes[dst]['mean color'] - graph.nodes[n]['mean color']
+    diff = np.linalg.norm(diff)
+    return {'weight': diff}
+
+
+def merge_mean_color(graph, src, dst):
+    """Callback called before merging two nodes of a mean color distance graph.
+
+    This method computes the mean color of `dst`.
+
+    Parameters
+    ----------
+    graph : RAG
+        The graph under consideration.
+    src, dst : int
+        The vertices in `graph` to be merged.
+    """
+    graph.nodes[dst]['total color'] += graph.nodes[src]['total color']
+    graph.nodes[dst]['pixel count'] += graph.nodes[src]['pixel count']
+    graph.nodes[dst]['mean color'] = (graph.nodes[dst]['total color'] /
+                                      graph.nodes[dst]['pixel count'])
+
+
 def binaryimage(image):
     imagepsnr=cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
     entr_img = entropy(imagepsnr, disk(1))
@@ -398,6 +443,26 @@ def binaryimage(image):
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     cv2.imwrite("C:/Users/evgen/Downloads/alexresult.jpg",result)
+    
+    labels = segmentation.slic(image, compactness=30, n_segments=900, start_label=1)
+    g = graph.rag_mean_color(image, labels)
+
+    labels2 = graph.merge_hierarchical(labels, g, thresh=20, rag_copy=False,
+                                   in_place_merge=True,
+                                   merge_func=merge_mean_color,
+                                   weight_func=_weight_mean_color)
+
+    out = color.label2rgb(labels2, image, kind='avg', bg_label=0)
+    out = segmentation.mark_boundaries(out, labels2, (0, 0, 0))
+    
+    plt.figure(figsize=(15,7))
+    plt.imshow(out,cmap='gray',vmax=out.max(),vmin=out.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    out=np.asarray(out,dtype=np.uint8)
+    r=cv2.cvtColor(out,cv2.COLOR_BGR2RGB)
+    cv2.imwrite("C:/Users/evgen/Downloads/alexRAG.jpg",r)
     
     edges = cv2.Canny(image=image, threshold1=15, threshold2=30)
    
