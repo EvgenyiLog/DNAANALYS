@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[4]:
+# In[5]:
 
 
 from PIL import Image
@@ -542,6 +542,7 @@ def filtration(image,path):
     slp,hlp=sporco.signal.tikhonov_filter(image,3)
     hlp=ndimage.median_filter(hlp, size=11)
     hlp=hlp<np.percentile(hlp, 90)
+    #hlp=hlp>np.percentile(hlp, 10)
     image2 = readimage(path)
     #image2=image2[0:1000,0:1000]
     image2=np.asarray(image2,dtype=np.uint8)
@@ -653,6 +654,7 @@ def filtration(image,path):
 def main():
     image=readimage("C:/Users/evgen/Downloads/s_1_1102_c.jpg")
     image=tiffreader("C:/Users/evgen/Downloads/s_1_1102_c.tif")
+    imagebefore=image
     fig,(ax1,ax2) = plt.subplots(ncols=2)
     ax1.imshow(image,cmap='gray',vmax=image.max(),vmin=image.min())
     ax1.tick_params(labelsize =20,#  Размер подписи
@@ -722,6 +724,7 @@ def main():
 
     
     image=filtration(image,"C:/Users/evgen/Downloads/s_1_1101_a.jpg")
+    imageafter=image
     #image=filtration(image,"C:/s_1_1101_a.jpg")
     fig,(ax1,ax2) = plt.subplots(ncols=2)
     ax1.imshow(image,cmap='gray',vmax=image.max(),vmin=image.min())
@@ -740,12 +743,37 @@ def main():
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     
+    plt.figure(figsize=(15,7))
+    plt.subplot(121)
+    plt.imshow(imagebefore[0:200,0:200],cmap='gray',vmax=imagebefore.max(),vmin=imagebefore.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    plt.subplot(122)
+    plt.imshow(imageafter[0:200,0:200],cmap='gray',vmax=imageafter.max(),vmin=imageafter.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    
+    fig,(ax1,ax2) = plt.subplots(ncols=2)
+    boxplot_2d(imagebefore[0:int(imagebefore.shape[0]),:],imagebefore[:,0:int(imagebefore.shape[1])],ax=ax1, whis=9)
+    ax1.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    boxplot_2d(imageafter[0:int(imageafter.shape[0]),:],imageafter[:,0:int(imageafter.shape[1])],ax=ax2, whis=9)
+    ax2.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
     
     plt.show()
     
     
 if __name__ == "__main__":
     main()
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:
