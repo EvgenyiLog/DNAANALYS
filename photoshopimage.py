@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[8]:
+# In[6]:
 
 
 from PIL import Image
@@ -399,6 +399,13 @@ def binaryimage(image):
     images=cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
     cv2.imwrite("C:/Users/evgen/Downloads/alex.jpg",images)
     
+    imagenegative=cv2.bitwise_not(image)
+    plt.figure(figsize=(15, 7))
+    plt.imshow(imagenegative,vmax=imagenegative.max(),vmin=imagenegative.min())
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    images=cv2.cvtColor(imagenegative,cv2.COLOR_BGR2RGB)
+    cv2.imwrite("C:/Users/evgen/Downloads/alexnegative.jpg",images)
     fig,(ax1,ax2) = plt.subplots(ncols=2)
     ax1.imshow(image,cmap='gray',vmax=image.max(),vmin=image.min())
     ax1.tick_params(labelsize =20,#  Размер подписи
@@ -415,7 +422,13 @@ def binaryimage(image):
     
     images=cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
     cv2.imwrite("C:/Users/evgen/Downloads/alexgray.jpg",images)
-    
+    imagenegative=cv2.bitwise_not(image)
+    plt.figure(figsize=(15, 7))
+    plt.imshow(imagenegative, cmap=plt.cm.gray,vmax=imagenegative.max(),vmin=imagenegative.min())
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    images=cv2.cvtColor(imagenegative,cv2.COLOR_BGR2RGB)
+    cv2.imwrite("C:/Users/evgen/Downloads/alexgraynegative.jpg",images)
     #thresh = np.std(image)
     thresh = np.mean(image)
     #thresh =128
@@ -427,6 +440,14 @@ def binaryimage(image):
     
     images=cv2.cvtColor(imagebinary,cv2.COLOR_BGR2RGB)
     cv2.imwrite("C:/Users/evgen/Downloads/alexbinary.jpg",images)
+    
+    imagenegative=cv2.bitwise_not(imagebinary)
+    plt.figure(figsize=(15, 7))
+    plt.imshow(imagenegative, cmap=plt.cm.gray,vmax=imagenegative.max(),vmin=imagenegative.min())
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    images=cv2.cvtColor(imagenegative,cv2.COLOR_BGR2RGB)
+    cv2.imwrite("C:/Users/evgen/Downloads/alexbinarynegative.jpg",images)
     
     # threshold input image using otsu thresholding as mask and refine with morphology
     ret, mask = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU) 
@@ -588,6 +609,12 @@ def main():
     
 if __name__ == "__main__":
     main()
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:

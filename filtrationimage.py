@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
+# In[ ]:
 
 
 from PIL import Image
@@ -743,7 +743,7 @@ def main():
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     
-    plt.figure(figsize=(15,7))
+    fig=plt.figure(figsize=(15,7))
     plt.subplot(121)
     plt.imshow(imagebefore[0:200,0:200],cmap='gray',vmax=imagebefore.max(),vmin=imagebefore.min())
     #plt.grid(True)
@@ -754,6 +754,7 @@ def main():
     #plt.grid(True)
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
+    plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_filtration.jpg")
     
     fig,(ax1,ax2) = plt.subplots(ncols=2)
     boxplot_2d(imagebefore[0:int(imagebefore.shape[0]),:],imagebefore[:,0:int(imagebefore.shape[1])],ax=ax1, whis=9)
@@ -762,6 +763,7 @@ def main():
     boxplot_2d(imageafter[0:int(imageafter.shape[0]),:],imageafter[:,0:int(imageafter.shape[1])],ax=ax2, whis=9)
     ax2.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
+    plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_boxplot.jpg")
     
     plt.show()
     
