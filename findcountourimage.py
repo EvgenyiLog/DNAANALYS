@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[8]:
+# In[16]:
 
 
 from PIL import Image
@@ -54,6 +54,7 @@ from matplotlib.patches import Rectangle
 from matplotlib.lines import Line2D
 #import sunkit_image
 
+import os
 import numpy as np
 
 def boxplot_2d(x,y, ax, whis=1.5):
@@ -509,10 +510,40 @@ def findcountour(image):
     
 
     
-    for i in contours:
+    for num,i in enumerate(contours):
         M = cv2.moments(i)
         (x,y), (width, height), angle= cv2.minAreaRect(i)
+        #print(width)
+        #print(height)
+        if num<10 and width>0 and height>0:
+            imagecrop=imagesource[y:y+height, x:x+width]
+            filename=str(num)+'_2'
+            save_dir="C:/Users/evgen/Downloads/"
+            filepath=os.path.join(save_dir, filename)
+            filepath=os.path.splitext(os.path.abspath(filepath))[0]+".jpg"
+            cv2.imwrite(filepath,imagecrop)
+            
+        if num <10:
+            x,y,width,height = cv2.boundingRect(i)
+            #print(width)
+            #print(height)
+            imagecrop=imagesource[y:y+height, x:x+width]
+            filename=str(num)
+            save_dir="C:/Users/evgen/Downloads/"
+            filepath=os.path.join(save_dir, filename)
+            filepath=os.path.splitext(os.path.abspath(filepath))[0]+".jpg"
+            cv2.imwrite(filepath,imagecrop)
+            filename=str(num)+'_1'
+            imagecrop=imagesource[y:y+5, x:x+5]
+            save_dir="C:/Users/evgen/Downloads/"
+            filepath=os.path.join(save_dir, filename)
+            filepath=os.path.splitext(os.path.abspath(filepath))[0]+".jpg"
+            cv2.imwrite(filepath,imagecrop)
+            
+            
         #print(x)
+        #print(width)
+        #print(height)
         xcentrrect.append(x)
         ycentrrect.append(y)
         intensivityrect.append(imagesource[int(np.floor(y)),int(np.ceil(x))])
@@ -522,13 +553,21 @@ def findcountour(image):
             xcentr.append(cx)
             ycentr.append(cy)
             intensivity.append(imagesource[cy,cx])
-            
+    print('Количество')
+    print(len(contours))
+    print(len(xcentr))
+    print()
+        
             
     d={'xcentr':xcentr,'ycentr':ycentr,'intensivity':intensivity}
     df=pd.DataFrame(data=d)
+    print(df['intensivity'].min())
+    print(df['intensivity'].max())
     df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivity.xlsx")
     d={'xcentrrect':xcentrrect,'ycentrrect':ycentrrect,'intensivityrect':intensivityrect}
     df=pd.DataFrame(data=d)
+    print(df['intensivityrect'].min())
+    print(df['intensivityrect'].max())
     df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityrect.xlsx")
             
             
@@ -562,6 +601,12 @@ def main():
     
 if __name__ == "__main__":
     main()
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:
