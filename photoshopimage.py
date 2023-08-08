@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[6]:
+# In[5]:
 
 
 from PIL import Image
@@ -303,7 +303,7 @@ def merge_mean_color(graph, src, dst):
     graph.nodes[dst]['mean color'] = (graph.nodes[dst]['total color'] /
                                       graph.nodes[dst]['pixel count'])
 
-
+import skimage
 def binaryimage(image):
     imagepsnr=cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
     entr_img = entropy(imagepsnr, disk(1))
@@ -420,6 +420,15 @@ def binaryimage(image):
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     
+    fig,(ax1,ax2) = plt.subplots(ncols=2)
+    ax1.imshow(image,cmap='gray',vmax=image.max(),vmin=image.min())
+    ax1.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    boxplot_2d(image[0:int(image.shape[0]),:],image[:,0:int(image.shape[1])],ax=ax2, whis=1.5)
+    ax2.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    
+    
     images=cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
     cv2.imwrite("C:/Users/evgen/Downloads/alexgray.jpg",images)
     imagenegative=cv2.bitwise_not(image)
@@ -497,13 +506,67 @@ def binaryimage(image):
     cv2.imwrite("C:/Users/evgen/Downloads/alexedges.jpg",images)
     
     
+    #sobel
+    img_sobelx = cv2.Sobel(image,cv2.CV_8U,1,0,ksize=5)
+    img_sobely = cv2.Sobel(image,cv2.CV_8U,0,1,ksize=5)
+    sobel = img_sobelx + img_sobely
+    
+    plt.figure(figsize=(15,7))
+    plt.imshow(sobel,cmap='gray',vmax=sobel.max(),vmin=sobel.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    
+    images=cv2.cvtColor(sobel,cv2.COLOR_BGR2RGB)
+    cv2.imwrite("C:/Users/evgen/Downloads/alexsobel.jpg",images)
+
+
+    #prewitt
+    kernelx = np.array([[1,1,1],[0,0,0],[-1,-1,-1]])
+    kernely = np.array([[-1,0,1],[-1,0,1],[-1,0,1]])
+    img_prewittx = cv2.filter2D(image, -1, kernelx)
+    img_prewitty = cv2.filter2D(image, -1, kernely)
+    prewitty=img_prewittx+img_prewitty
+    plt.figure(figsize=(15,7))
+    plt.imshow(prewitty,cmap='gray',vmax=prewitty.max(),vmin=prewitty.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    
+    images=cv2.cvtColor(prewitty,cv2.COLOR_BGR2RGB)
+    cv2.imwrite("C:/Users/evgen/Downloads/alexsprewitty.jpg",images)
+    
+    laplac=cv2.Laplacian(image,cv2.CV_16S,ksize=3)
+    laplacian = cv2.convertScaleAbs(laplac)
+    plt.figure(figsize=(15,7))
+    plt.imshow(laplacian,cmap='gray',vmax=laplacian.max(),vmin=laplacian.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    
+    images=cv2.cvtColor(laplacian,cv2.COLOR_BGR2RGB)
+    cv2.imwrite("C:/Users/evgen/Downloads/alexslaplacian.jpg",images)
+    
+    roberts=skimage.filters.roberts(image)
+    plt.figure(figsize=(15,7))
+    plt.imshow(roberts,cmap='gray',vmax=roberts.max(),vmin=roberts.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    roberts= cv2.convertScaleAbs(roberts)
+    images=cv2.cvtColor(roberts,cv2.COLOR_BGR2RGB)
+    cv2.imwrite("C:/Users/evgen/Downloads/alexsroberts.jpg",images)
+
+    
     ret, thresh = cv2.threshold(edges, 15, 30, 0)
     plt.figure(figsize=(15,7))
     plt.imshow(thresh,cmap='gray',vmax=thresh.max(),vmin=thresh.min())
     #plt.grid(True)
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
-
+    
+    
+    
     r=cv2.cvtColor(thresh,cv2.COLOR_GRAY2RGB)
     cv2.imwrite("C:/Users/evgen/Downloads/alexthresh.jpg",r)
     
