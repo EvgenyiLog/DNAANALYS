@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[1]:
 
 
 from PIL import Image
@@ -620,6 +620,10 @@ def findcountour(image1,image2):
     #mean=[]
     #std=[]
     width=[]
+    areas=[]
+    perimeters=[]
+    areasrect=[]
+    perimetersrect=[]
     height=[]
     angle=[]
     x1=[]
@@ -671,6 +675,8 @@ def findcountour(image1,image2):
         y3rect.append(box[2][1])
         x4rect.append(box[3][0])
         y4rect.append(box[3][1])
+        areasrect.append(cv2.contourArea(i))
+        perimetersrect.append(cv2.arcLength(i,True))
         
         intensivityrect.append(imagesource[int(np.floor(y)),int(np.floor(x))])
         if M['m00'] != 0:
@@ -692,7 +698,8 @@ def findcountour(image1,image2):
             y3.append(box[2][1])
             x4.append(box[3][0])
             y4.append(box[3][1])
-            
+            areas.append(cv2.contourArea(i))
+            perimeters.append(cv2.arcLength(i,True))
             intensivity.append(imagesource[cy,cx])
     print('Количество')
     print(len(contours))
@@ -709,11 +716,12 @@ def findcountour(image1,image2):
     df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityfilt16par.xlsx")
     d={'xcentrrect':xcentrrect,'ycentrrect':ycentrrect,'intensivityrect':intensivityrect,'widthrect':widthrect,
     'heightrect':heightrect,'anglerect':anglerect,'x1rect':x1rect,'y1rect':y1rect, 
-    'x2rect':x2rect,'y2rect':y2rect,'x3rect':x3rect,'y3rect':y3rect,'x4rect':x4rect,'y4rect':y4rect}
+    'x2rect':x2rect,'y2rect':y2rect,'x3rect':x3rect,'y3rect':y3rect,'x4rect':x4rect,'y4rect':y4rect,'areasrect':areasrect,
+     'perimetersrect':perimetersrect }
     df=pd.DataFrame(data=d)
     print(df['intensivityrect'].min())
     print(df['intensivityrect'].max())
-    df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityrectfilt16par.xlsx")
+    df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityrectfilt16parrect.xlsx")
 
 def main():
     image=readimage("C:/Users/evgen/Downloads/s_1_1102_c.jpg")
