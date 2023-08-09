@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 from PIL import Image
@@ -426,6 +426,7 @@ def corrfft(image1,image2):
     dft2 = cv2.dft(np.float32(image2),flags = cv2.DFT_COMPLEX_OUTPUT)
     corr=cv2.multiply(dft1,dft2.conj())
     corr/=np.amax(corr)
+    #corr=cv2.magnitude(corr)
     #plt.figure(figsize=(15,7))
     #plt.imshow(corr[0:1000,0:1000],cmap='gray',vmax=corr.max(),vmin=corr.min())
     #plt.grid(True)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[10]:
+# In[8]:
 
 
 import pandas as pd
@@ -16,6 +16,7 @@ def xslxreader(f):
         data=pd.read_excel(f)
         #print(data)
         #print(data.values)
+        print(data.columns)
     else:
         assert print('The file does not exist')
     return data
@@ -24,20 +25,21 @@ def xslxreader(f):
 def main():
     df=xslxreader(os.path.abspath("C:/Users/evgen/Downloads/contourcentrintensivityrectfilt16parrect.xlsx"))
     plt.figure('Violinplot',figsize=(15,7))   
-    sns.violinplot(data=df)
+    sns.violinplot(data=df.loc[:,'xcentrrect':'perimetersrect'])
     plt.grid(True)
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет 
     
     plt.figure('Boxplot',figsize=(15,7))    
-    sns.boxplot(df)
+    sns.boxplot(df.loc[:,'xcentrrect':
+       'perimetersrect'])
     plt.grid(True)
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     
     try:
         plt.figure('Histplot',figsize=(15,7))
-        sns.histplot(df)
+        sns.histplot(df.loc[:,'xcentrrect':'perimetersrect'])
         plt.grid(True)
         plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
@@ -45,7 +47,7 @@ def main():
         pass
     try:
         plt.figure('Barplot',figsize=(15,7))  
-        sns.barplot(df)
+        sns.barplot(df.loc[:,'xcentrrect':'perimetersrect'])
         plt.grid(True)
         plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений

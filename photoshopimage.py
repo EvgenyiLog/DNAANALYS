@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
+# In[9]:
 
 
 from PIL import Image
@@ -536,6 +536,15 @@ def binaryimage(image):
     images=cv2.cvtColor(prewitty,cv2.COLOR_BGR2RGB)
     cv2.imwrite("C:/Users/evgen/Downloads/alexsprewitty.jpg",images)
     
+    prewitty=skimage.filters.prewitt(image)
+    plt.figure(figsize=(15,7))
+    plt.imshow(prewitty,cmap='gray',vmax=prewitty.max(),vmin=prewitty.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    images=prewitty
+    cv2.imwrite("C:/Users/evgen/Downloads/alexsprewitty1.jpg",images)
+    
     laplac=cv2.Laplacian(image,cv2.CV_16S,ksize=3)
     laplacian = cv2.convertScaleAbs(laplac)
     plt.figure(figsize=(15,7))
@@ -554,8 +563,57 @@ def binaryimage(image):
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     roberts= cv2.convertScaleAbs(roberts)
-    images=cv2.cvtColor(roberts,cv2.COLOR_BGR2RGB)
+    #images=cv2.cvtColor(roberts,cv2.COLOR_BGR2RGB)
+    images=roberts
     cv2.imwrite("C:/Users/evgen/Downloads/alexsroberts.jpg",images)
+    
+    # Roberts operator
+    kernelx = np.array([[- 1.0], [0.1]], dtype=int)
+    kernely = np.array([[0.- 1], [1.0]], dtype=int)
+    robertsx=cv2.filter2D(image, cv2.CV_16S, kernelx)
+    robertsy=cv2.filter2D(image, cv2.CV_16S, kernely)
+    roberts=robertsx+robertsy
+    plt.figure(figsize=(15,7))
+    plt.imshow(roberts,cmap='gray',vmax=roberts.max(),vmin=roberts.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    roberts= cv2.convertScaleAbs(roberts)
+    images=cv2.cvtColor(roberts,cv2.COLOR_BGR2RGB)
+    #images=roberts
+    try:
+        cv2.imwrite("C:/Users/evgen/Downloads/alexsroberts1jpg",images)
+    except:
+        pass
+    
+    scharrx = cv2.Scharr(image, cv2.CV_64F, 1, 0)
+    scharry = cv2.Scharr(image, cv2.CV_64F, 0, 1)
+    sharr=scharrx+scharry
+    plt.figure(figsize=(15,7))
+    plt.imshow(sharr,cmap='gray',vmax=sharr.max(),vmin=sharr.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    sharr= cv2.convertScaleAbs(sharr)
+    images=sharr
+    try:
+        cv2.imwrite("C:/Users/evgen/Downloads/alexssharr.jpg",images)
+    except:
+        pass
+    
+    scharr=skimage.filters.scharr(image)
+    plt.figure(figsize=(15,7))
+    plt.imshow(sharr,cmap='gray',vmax=sharr.max(),vmin=sharr.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    sharr= cv2.convertScaleAbs(sharr)
+    images=sharr
+    try:
+        cv2.imwrite("C:/Users/evgen/Downloads/alexssharr1.jpg",images)
+    except:
+        pass
+    
 
     
     ret, thresh = cv2.threshold(edges, 15, 30, 0)

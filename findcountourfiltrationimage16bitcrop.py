@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[6]:
 
 
 from PIL import Image
@@ -603,7 +603,7 @@ def findcountour(image1,image2,filename2):
     
     ret, thresh = cv2.threshold(edges, 1, 2, 0)
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    k=20
+    k=200
     
 
     
@@ -642,7 +642,10 @@ def findcountour(image1,image2,filename2):
             maxy=np.int0(maxy)
             minx=np.int0(minx)
             miny=np.int0(miny)
-            imagecrop=imagesource[miny:maxy,minx:maxx]
+            print(maxx,maxy)
+            print(minx,miny)
+            imagecrop=imagesource[int(miny):int(maxy),int(minx):int(maxx)]
+            print(imagecrop.shape)
             try:
                 cv2.imwrite(filepath,imagecrop)
             except:
