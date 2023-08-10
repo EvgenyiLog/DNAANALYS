@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[6]:
+# In[2]:
 
 
 from PIL import Image
@@ -645,6 +645,18 @@ def findcountour(image1,image2,filename2):
             print(maxx,maxy)
             print(minx,miny)
             imagecrop=imagesource[int(miny):int(maxy),int(minx):int(maxx)]
+            print(imagecrop.shape)
+            try:
+                cv2.imwrite(filepath,imagecrop)
+            except:
+                pass
+            x,y,w,h = cv2.boundingRect(i)
+            filename=''.join([str(num), str(f3)]) 
+            filename=''.join([filename,str('boundingrect')])
+            save_dir="C:/Users/evgen/Downloads/"
+            filepath=os.path.join(save_dir, filename)
+            filepath=os.path.splitext(os.path.abspath(filepath))[0]+".jpg"
+            imagecrop=imagesource[y:y+h, x:x+w]
             print(imagecrop.shape)
             try:
                 cv2.imwrite(filepath,imagecrop)
