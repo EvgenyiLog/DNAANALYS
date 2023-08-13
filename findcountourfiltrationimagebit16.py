@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[4]:
 
 
 from PIL import Image
@@ -396,28 +396,7 @@ def imageground(image):
     except:
         pass
     
-def groundimage(image):
-    # Вычисляем маску фона
-    image=np.uint8(image)
-    _, thresh = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-
-    # Убираем шум
-    kernel = np.ones((2, 2), np.uint16)
-    opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=50)
-    background=opening
     
-    background=cv2.normalize(background, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U) 
-    # создаем маску фона
-    sure_bg = cv2.dilate(opening, kernel, iterations=20) 
-
-
-    dist_transform = cv2.distanceTransform(opening, cv2.DIST_L2, 5)
-    _, sure_fg = cv2.threshold(dist_transform, 0.7 * dist_transform.max(), 255, 0)  
-
-    foreground=sure_fg
-    
-    foreground=cv2.normalize(foreground, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
-    return cv2.mean(background),cv2.mean(foreground)
     
 def corrfft(image1,image2):
     image1=np.uint8(image1)
@@ -426,7 +405,6 @@ def corrfft(image1,image2):
     dft2 = cv2.dft(np.float32(image2),flags = cv2.DFT_COMPLEX_OUTPUT)
     corr=cv2.multiply(dft1,dft2.conj())
     corr/=np.amax(corr)
-    #corr=cv2.magnitude(corr)
     #plt.figure(figsize=(15,7))
     #plt.imshow(corr[0:1000,0:1000],cmap='gray',vmax=corr.max(),vmin=corr.min())
     #plt.grid(True)
@@ -596,111 +574,40 @@ def findcountour(image1,image2):
     #plt.grid(True)
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
-    
+
     xcentr=[]
     ycentr=[]
-    #background=[]
-    #foreground=[]
     xcentrrect=[]
     ycentrrect=[]
     intensivity=[]
-    widthrect=[]
-    heightrect=[]
-    anglerect=[]
-    x1rect=[]
-    y1rect=[]
-    x2rect=[]
-    y2rect=[]
-    x3rect=[]
-    y3rect=[]
-    x4rect=[]
-    y4rect=[]
     intensivityrect=[]
-    #meanrect=[]
-    #stdrect=[]
-    #mean=[]
-    #std=[]
-    width=[]
-    areas=[]
-    perimeters=[]
-    areasrect=[]
-    perimetersrect=[]
-    height=[]
-    angle=[]
-    x1=[]
-    y1=[]
-    x2=[]
-    y2=[]
-    x3=[]
-    y3=[]
-    x4=[]
-    y4=[]
     ret, thresh = cv2.threshold(edges, 1, 2, 0)
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     
 
+    image=np.zeros_like(image1)
     
     for num,i in enumerate(contours):
         M = cv2.moments(i)
-        (x,y), (Width, Height), Angle= cv2.minAreaRect(i)
+        (x,y), (width, height), angle= cv2.minAreaRect(i)
         #print(width)
         #print(height)
-        rect = cv2.minAreaRect(i)
-        box = cv2.boxPoints(rect)
-        #box=np.int0(rect)
-        print()
-        #print(box.shape)
-        print()
-        #print(box[0])
-        #print(box[1])
-        #print(box[2])
-        #print(box[3])
-        print()
-        
+        imagecrect=cv2.circle(image, (int(y), int(x)), 1, (255, 255, 255), -1)
             
             
-        #print(x)
+        print(x)
+        print(y)
         #print(width)
         #print(height)
-        
         xcentrrect.append(x)
         ycentrrect.append(y)
-        widthrect.append(Width)
-        heightrect.append(Height)
-        anglerect.append(Angle)
-        x1rect.append(box[0][0])
-        y1rect.append(box[0][1])
-        x2rect.append(box[1][0])
-        y2rect.append(box[1][1])
-        x3rect.append(box[2][0])
-        y3rect.append(box[2][1])
-        x4rect.append(box[3][0])
-        y4rect.append(box[3][1])
-        areasrect.append(cv2.contourArea(i))
-        perimetersrect.append(cv2.arcLength(i,True))
-        
         intensivityrect.append(imagesource[int(np.floor(y)),int(np.floor(x))])
         if M['m00'] != 0:
             cx = int(M['m10']/M['m00'])
             cy = int(M['m01']/M['m00'])
             xcentr.append(cx)
             ycentr.append(cy)
-            (x,y), (Width, Height), Angle= cv2.minAreaRect(i)
-            width.append(Width)
-            height.append(Height)
-            angle.append(Angle)
-            rect = cv2.minAreaRect(i)
-            box = cv2.boxPoints(rect)
-            x1.append(box[0][0])
-            y1.append(box[0][1])
-            x2.append(box[1][0])
-            y2.append(box[1][1])
-            x3.append(box[2][0])
-            y3.append(box[2][1])
-            x4.append(box[3][0])
-            y4.append(box[3][1])
-            areas.append(cv2.contourArea(i))
-            perimeters.append(cv2.arcLength(i,True))
+            imageccountour=cv2.circle(image, (int(cy), int(cx)), 1, (255, 255, 255), -1)
             intensivity.append(imagesource[cy,cx])
     print('Количество')
     print(len(contours))
@@ -708,21 +615,25 @@ def findcountour(image1,image2):
     print()
         
             
-    d={'xcentr':xcentr,'ycentr':ycentr,'intensivity':intensivity,'width':width,
-    'height':height,'angle':angle,'x1':x1,'y1':y1, 'x2':x2,'y2':y2,'x3':x3,
-       'y3':y3,'x4':x4,'y4':y4}
+    d={'xcentr':xcentr,'ycentr':ycentr,'intensivity':intensivity}
     df=pd.DataFrame(data=d)
     print(df['intensivity'].min())
     print(df['intensivity'].max())
-    df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityfilt16par.xlsx")
-    d={'xcentrrect':xcentrrect,'ycentrrect':ycentrrect,'intensivityrect':intensivityrect,'widthrect':widthrect,
-    'heightrect':heightrect,'anglerect':anglerect,'x1rect':x1rect,'y1rect':y1rect, 
-    'x2rect':x2rect,'y2rect':y2rect,'x3rect':x3rect,'y3rect':y3rect,'x4rect':x4rect,'y4rect':y4rect,'areasrect':areasrect,
-     'perimetersrect':perimetersrect }
+    #df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityfilt16.xlsx")
+    d={'xcentrrect':xcentrrect,'ycentrrect':ycentrrect,'intensivityrect':intensivityrect}
     df=pd.DataFrame(data=d)
     print(df['intensivityrect'].min())
     print(df['intensivityrect'].max())
-    df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityrectfilt16parrect.xlsx")
+    #df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityrectfilt16.xlsx")
+    
+    fig,(ax1,ax2) = plt.subplots(ncols=2,figsize=(15,7))
+    ax1.imshow(imageccountour[0:200,0:200],cmap='gray',vmax=imageccountour.max(),vmin=imageccountour.min())
+    ax1.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    ax2.imshow(imagecrect[0:200,0:200],cmap='gray',vmax=imagecrect.max(),vmin=imagecrect.min())
+    ax2.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_countours.jpg")
 
 def main():
     image=readimage("C:/Users/evgen/Downloads/s_1_1102_c.jpg")
@@ -737,7 +648,7 @@ def main():
     ax2.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     
-    plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_beforefiltration1.jpg")
+    #plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_beforefiltration.jpg")
     
     image=filtration(image,"C:/Users/evgen/Downloads/s_1_1101_a.jpg")
     imageafter=image
@@ -753,18 +664,18 @@ def main():
     boxplot_2d(imageafter[0:int(imageafter.shape[0]),:],imageafter[:,0:int(imageafter.shape[1])],ax=ax2, whis=7)
     ax2.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
-    plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_afterfiltration1.jpg")
+    #plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_afterfiltration.jpg")
     
     plt.figure(figsize=(15,7))
     plt.subplot(211)
-    plt.plot(imagebefore[:,600],'k')
-    plt.plot(imageafter[:,600],'r')
+    plt.plot(imagebefore[:,500],'k')
+    plt.plot(imageafter[:,500],'r')
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     plt.grid(True)
     plt.subplot(212)
-    plt.plot(imagebefore[600,:],'g')
-    plt.plot(imageafter[600,:],'b')
+    plt.plot(imagebefore[500,:],'g')
+    plt.plot(imageafter[500,:],'b')
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     plt.grid(True)
@@ -775,12 +686,6 @@ def main():
     
 if __name__ == "__main__":
     main()
-
-
-# In[ ]:
-
-
-
 
 
 # In[ ]:

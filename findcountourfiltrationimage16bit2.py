@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[22]:
+# In[1]:
 
 
 from PIL import Image
@@ -639,12 +639,12 @@ def findcountour(image1,image2):
     df=pd.DataFrame(data=d)
     print(df['intensivity'].min())
     print(df['intensivity'].max())
-    df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityfilt16.xlsx")
+    df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityfilt161.xlsx")
     d={'xcentrrect':xcentrrect,'ycentrrect':ycentrrect,'intensivityrect':intensivityrect}
     df=pd.DataFrame(data=d)
     print(df['intensivityrect'].min())
     print(df['intensivityrect'].max())
-    df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityrectfilt16.xlsx")
+    df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityrectfilt161.xlsx")
 
 def main():
     image=readimage("C:/Users/evgen/Downloads/s_1_1102_c.jpg")
@@ -659,7 +659,7 @@ def main():
     ax2.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     
-    plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_beforefiltration.jpg")
+    plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_beforefiltration1.jpg")
     
     image=filtration(image,"C:/Users/evgen/Downloads/s_1_1101_a.jpg")
     imageafter=image
@@ -675,7 +675,7 @@ def main():
     boxplot_2d(imageafter[0:int(imageafter.shape[0]),:],imageafter[:,0:int(imageafter.shape[1])],ax=ax2, whis=7)
     ax2.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
-    plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_afterfiltration.jpg")
+    plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_afterfiltration1.jpg")
     
     plt.figure(figsize=(15,7))
     plt.subplot(211)
@@ -697,3 +697,10 @@ def main():
     
 if __name__ == "__main__":
     main()
+
+
+# In[ ]:
+
+
+
+
