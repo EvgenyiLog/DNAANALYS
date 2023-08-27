@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[9]:
+# In[3]:
 
 
 from PIL import Image
@@ -361,17 +361,7 @@ def imageground(image):
     plt.imshow(background[0:1000,0:1000], cmap=plt.cm.gray,vmax=background.max(),vmin=background.min())
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
-    try:
-        fig,(ax1,ax2) = plt.subplots(ncols=2)
-        ax1.imshow(background,cmap='gray',vmax=background.max(),vmin=background.min())
-        ax1.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-        boxplot_2d(background[0:int(background.shape[0]),:],background[:,0:int(background.shape[1])],ax=ax2, whis=7)
-        ax2.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-        plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_backgroundboxplot.jpg")
-    except:
-        pass
+    
     
 
     # создаем маску фона
@@ -389,18 +379,10 @@ def imageground(image):
     plt.imshow(foreground[0:1000,0:1000], cmap=plt.cm.gray,vmax=foreground.max(),vmin=foreground.min())
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
+    return  background,foreground
+
     
-    try:
-        fig,(ax1,ax2) = plt.subplots(ncols=2)
-        ax1.imshow(foreground,cmap='gray',vmax=foreground.max(),vmin=foreground.min())
-        ax1.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-        boxplot_2d(foreground[0:int(foreground.shape[0]),:],foreground[:,0:int(foreground.shape[1])],ax=ax2, whis=7)
-        ax2.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-        plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_foregroundboxplot.jpg")
-    except:
-        pass
+    
     
 def groundimage(image):
     # Вычисляем маску фона
@@ -431,9 +413,17 @@ def corrfft(image1,image2):
     dft1 = cv2.dft(np.float32(image1),flags = cv2.DFT_COMPLEX_OUTPUT)
     dft2 = cv2.dft(np.float32(image2),flags = cv2.DFT_COMPLEX_OUTPUT)
     corr=cv2.multiply(dft1,dft2.conj())
+    image1=np.uint8(image1)
+    image2=np.uint8(image2)
+    dft1 = cv2.dft(np.float32(image1),flags = cv2.DFT_COMPLEX_OUTPUT)
+    dft2 = cv2.dft(np.float32(image2),flags = cv2.DFT_COMPLEX_OUTPUT)
+    corr=cv2.multiply(dft1,dft2.conj())
     corr=cv2.idft(corr)
     corr=cv2.normalize(corr, None, 0, 4096, cv2.NORM_MINMAX, cv2.CV_16U)
     print(corr.dtype)
+    print(corr.shape)
+    
+   
     
     plt.figure(figsize=(15,7))
     plt.subplot(121)
@@ -448,13 +438,10 @@ def corrfft(image1,image2):
                     color = 'k')   #  Цвет делений
     
     
-    corr=cv2.filter2D(image1,-1,image2)
-    print(corr.dtype)
-    plt.figure(figsize=(15,7))
-    plt.imshow(corr[0:1000,0:1000],cmap='gray',vmax=corr.max(),vmin=corr.min())
-    plt.grid(True)
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
+    
+   
+    
+    
     
 
 from sklearn.decomposition import FastICA,PCA
@@ -618,150 +605,50 @@ def filtration(image,path):
 
     return hlpfilt
 
-import os
-def findcountour(image1,image2):
-    imagesource=image2
-    'поиск контуров'
-    edges = cv2.Canny(image=image1, threshold1=1, threshold2=2)
-   
+
+def sinconvolve(image):
+    image=cv2.normalize(image, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
+    xx, yy = np.ogrid[0:20,0:20]
+    R = np.sqrt(xx**2 + yy**2)
+    z = np.sin(R)
+    fig = plt.figure(figsize=(15,7))          #create a canvas, tell matplotlib it's 3d
+    ax = fig.add_subplot(111, projection='3d')
+    #ax.scatter(xs = xx, ys = yy, zs = image)
+    ax.plot_surface(xx,yy,z)
+    ax.grid(True)
+    xx, yy = np.ogrid[0:image.shape[0],0:image.shape[1]]
+    print(xx.shape)
+    fig = plt.figure(figsize=(15,7))          #create a canvas, tell matplotlib it's 3d
+    ax = fig.add_subplot(111, projection='3d')
+    #ax.scatter(xs = xx, ys = yy, zs = image)
+    ax.plot_surface(xx,yy,image)
+    ax.grid(True)
+    image=cv2.filter2D(image,-1,z)
+    print(image.dtype)
+    print(f'max={np.amax(image)}')
+    print(f'min={np.amin(image)}')
     plt.figure(figsize=(15,7))
-    plt.imshow(edges[0:1000,0:1000],cmap='gray',vmax=edges.max(),vmin=edges.min())
+    plt.imshow(image[0:1000,0:1000],cmap='gray',vmax=image.max(),vmin=image.min())
     #plt.grid(True)
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     
-    xcentr=[]
-    ycentr=[]
-    #background=[]
-    #foreground=[]
-    xcentrrect=[]
-    ycentrrect=[]
-    intensivity=[]
-    widthrect=[]
-    heightrect=[]
-    anglerect=[]
-    x1rect=[]
-    y1rect=[]
-    x2rect=[]
-    y2rect=[]
-    x3rect=[]
-    y3rect=[]
-    x4rect=[]
-    y4rect=[]
-    intensivityrect=[]
-    #meanrect=[]
-    #stdrect=[]
-    #mean=[]
-    #std=[]
-    width=[]
-    areas=[]
-    perimeters=[]
-    areasrect=[]
-    perimetersrect=[]
-    height=[]
-    angle=[]
-    x1=[]
-    y1=[]
-    x2=[]
-    y2=[]
-    x3=[]
-    y3=[]
-    x4=[]
-    y4=[]
-    ret, thresh = cv2.threshold(edges, 1, 2, 0)
-    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     
-
+    xx, yy = np.ogrid[0:image.shape[0],0:image.shape[1]]
+    fig = plt.figure(figsize=(15,7))          #create a canvas, tell matplotlib it's 3d
+    ax = fig.add_subplot(111, projection='3d')
+    #ax.scatter(xs = xx, ys = yy, zs = image)
+    ax.plot_surface(xx,yy,image)
+    ax.grid(True)
     
-    for num,i in enumerate(contours):
-        M = cv2.moments(i)
-        (x,y), (Width, Height), Angle= cv2.minAreaRect(i)
-        #print(width)
-        #print(height)
-        rect = cv2.minAreaRect(i)
-        box = cv2.boxPoints(rect)
-        #box=np.int0(rect)
-        #print()
-        #print(box.shape)
-        #print()
-        #print(box[0])
-        #print(box[1])
-        #print(box[2])
-        #print(box[3])
-        #print()
-        
-            
-            
-        #print(x)
-        #print(width)
-        #print(height)
-        
-        xcentrrect.append(x)
-        ycentrrect.append(y)
-        widthrect.append(Width)
-        heightrect.append(Height)
-        anglerect.append(Angle)
-        x1rect.append(box[0][0])
-        y1rect.append(box[0][1])
-        x2rect.append(box[1][0])
-        y2rect.append(box[1][1])
-        x3rect.append(box[2][0])
-        y3rect.append(box[2][1])
-        x4rect.append(box[3][0])
-        y4rect.append(box[3][1])
-        areasrect.append(cv2.contourArea(i))
-        perimetersrect.append(cv2.arcLength(i,True))
-        
-        intensivityrect.append(imagesource[int(np.floor(y)),int(np.floor(x))])
-        if M['m00'] != 0:
-            cx = int(M['m10']/M['m00'])
-            cy = int(M['m01']/M['m00'])
-            xcentr.append(cx)
-            ycentr.append(cy)
-            (x,y), (Width, Height), Angle= cv2.minAreaRect(i)
-            width.append(Width)
-            height.append(Height)
-            angle.append(Angle)
-            rect = cv2.minAreaRect(i)
-            box = cv2.boxPoints(rect)
-            x1.append(box[0][0])
-            y1.append(box[0][1])
-            x2.append(box[1][0])
-            y2.append(box[1][1])
-            x3.append(box[2][0])
-            y3.append(box[2][1])
-            x4.append(box[3][0])
-            y4.append(box[3][1])
-            areas.append(cv2.contourArea(i))
-            perimeters.append(cv2.arcLength(i,True))
-            intensivity.append(imagesource[cy,cx])
-    print('Количество')
-    print(len(contours))
-    print(len(xcentr))
-    print()
-        
-            
-    d={'xcentr':xcentr,'ycentr':ycentr,'intensivity':intensivity,'width':width,
-    'height':height,'angle':angle,'x1':x1,'y1':y1, 'x2':x2,'y2':y2,'x3':x3,
-       'y3':y3,'x4':x4,'y4':y4}
-    df=pd.DataFrame(data=d)
-    print(df['intensivity'].min())
-    print(df['intensivity'].max())
-    df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityfilt16par.xlsx")
-    d={'xcentrrect':xcentrrect,'ycentrrect':ycentrrect,'intensivityrect':intensivityrect,'widthrect':widthrect,
-    'heightrect':heightrect,'anglerect':anglerect,'x1rect':x1rect,'y1rect':y1rect, 
-    'x2rect':x2rect,'y2rect':y2rect,'x3rect':x3rect,'y3rect':y3rect,'x4rect':x4rect,'y4rect':y4rect,'areasrect':areasrect,
-     'perimetersrect':perimetersrect }
-    df=pd.DataFrame(data=d)
-    print(df['intensivityrect'].min())
-    print(df['intensivityrect'].max())
-    df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityrectfilt16parrect.xlsx")
-
+    
+    
 def main():
     image=readimage("C:/Users/evgen/Downloads/s_1_1102_c.jpg")
     imagebefore=image
-    imageground(imagebefore)
+    backgroundbefore,foregroundbefore=imageground(imagebefore)
     imagebefore= cv2.normalize(imagebefore, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
+    
     fig,(ax1,ax2) = plt.subplots(ncols=2)
     ax1.imshow(imagebefore,cmap='gray',vmax=imagebefore.max(),vmin=imagebefore.min())
     ax1.tick_params(labelsize =20,#  Размер подписи
@@ -774,10 +661,13 @@ def main():
     
     image=filtration(image,"C:/Users/evgen/Downloads/s_1_1101_a.jpg")
     imageafter=image
-    imageground(imageafter)
-
+    backgroundafter,foregroundafter=imageground(imageafter)
+    
     imageafter8b=imageafter
     imageafter=cv2.normalize(imageafter, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
+    imageafter=cv2.subtract(imageafter,backgroundafter)
+    print(f'Max after filtration={np.amax(imageafter)}')
+    print(f'Min after filtration={np.amin(imageafter)}')
     #image=filtration(image,"C:/s_1_1101_a.jpg")
     fig,(ax1,ax2) = plt.subplots(ncols=2)
     ax1.imshow(imageafter,cmap='gray',vmax=imageafter.max(),vmin=imageafter.min())
@@ -801,7 +691,8 @@ def main():
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     plt.grid(True)
-    findcountour(imageafter8b,imageafter)
+    
+    sinconvolve(imageafter)
     
     plt.show()
     

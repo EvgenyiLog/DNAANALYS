@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[9]:
+# In[2]:
 
 
 from PIL import Image
@@ -495,6 +495,8 @@ def binaryimage(image):
     cv2.imwrite("C:/Users/evgen/Downloads/alexRAG.jpg",r)
     
     edges = cv2.Canny(image=image, threshold1=15, threshold2=30)
+    print(f'Edges max={np.amax(edges)}')
+    print(f'Edges min={np.amin(edges)}')
    
     plt.figure(figsize=(15,7))
     plt.imshow(edges,cmap='gray',vmax=edges.max(),vmin=edges.min())
@@ -510,6 +512,8 @@ def binaryimage(image):
     img_sobelx = cv2.Sobel(image,cv2.CV_8U,1,0,ksize=5)
     img_sobely = cv2.Sobel(image,cv2.CV_8U,0,1,ksize=5)
     sobel = img_sobelx + img_sobely
+    print(np.amax(sobel))
+    print(np.amin(sobel))
     
     plt.figure(figsize=(15,7))
     plt.imshow(sobel,cmap='gray',vmax=sobel.max(),vmin=sobel.min())
@@ -527,6 +531,8 @@ def binaryimage(image):
     img_prewittx = cv2.filter2D(image, -1, kernelx)
     img_prewitty = cv2.filter2D(image, -1, kernely)
     prewitty=img_prewittx+img_prewitty
+    print(np.amax(prewitty))
+    print(np.amin(prewitty))
     plt.figure(figsize=(15,7))
     plt.imshow(prewitty,cmap='gray',vmax=prewitty.max(),vmin=prewitty.min())
     #plt.grid(True)
@@ -546,6 +552,8 @@ def binaryimage(image):
     cv2.imwrite("C:/Users/evgen/Downloads/alexsprewitty1.jpg",images)
     
     laplac=cv2.Laplacian(image,cv2.CV_16S,ksize=3)
+    print(np.amax(laplac))
+    print(np.amin(laplac))
     laplacian = cv2.convertScaleAbs(laplac)
     plt.figure(figsize=(15,7))
     plt.imshow(laplacian,cmap='gray',vmax=laplacian.max(),vmin=laplacian.min())
@@ -557,6 +565,8 @@ def binaryimage(image):
     cv2.imwrite("C:/Users/evgen/Downloads/alexslaplacian.jpg",images)
     
     roberts=skimage.filters.roberts(image)
+    print(np.amax(roberts))
+    print(np.amin(roberts))
     plt.figure(figsize=(15,7))
     plt.imshow(roberts,cmap='gray',vmax=roberts.max(),vmin=roberts.min())
     #plt.grid(True)
@@ -573,6 +583,8 @@ def binaryimage(image):
     robertsx=cv2.filter2D(image, cv2.CV_16S, kernelx)
     robertsy=cv2.filter2D(image, cv2.CV_16S, kernely)
     roberts=robertsx+robertsy
+    print(np.amax(roberts))
+    print(np.amin(roberts))
     plt.figure(figsize=(15,7))
     plt.imshow(roberts,cmap='gray',vmax=roberts.max(),vmin=roberts.min())
     #plt.grid(True)
@@ -589,6 +601,8 @@ def binaryimage(image):
     scharrx = cv2.Scharr(image, cv2.CV_64F, 1, 0)
     scharry = cv2.Scharr(image, cv2.CV_64F, 0, 1)
     sharr=scharrx+scharry
+    print(np.amax(sharr))
+    print(np.amin(sharr))
     plt.figure(figsize=(15,7))
     plt.imshow(sharr,cmap='gray',vmax=sharr.max(),vmin=sharr.min())
     #plt.grid(True)
@@ -614,7 +628,53 @@ def binaryimage(image):
     except:
         pass
     
-
+    h, w = image.shape[:2]
+    print(f'Weigth= {w}')
+    print(f'Heigth= {h}')
+    res_image_nearest = cv2.resize(image, (int(w / 1.4), int(h / 1.4)), 
+                                 cv2.INTER_NEAREST)
+    res_image_linear = cv2.resize(image, (int(w / 1.4), int(h / 1.4)), 
+                                cv2.INTER_LINEAR)
+    plt.figure(figsize=(15,7))
+    plt.subplot(121)
+    plt.imshow(res_image_nearest,cmap='gray',vmax=res_image_nearest.max(),vmin=res_image_nearest.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    plt.subplot(122)
+    plt.imshow(res_image_linear,cmap='gray',vmax=res_image_linear.max(),vmin=res_image_linear.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    
+    
+    translation_matrix = np.float32([[1, 0, 200], [0, 1, 300]])
+    lagimage = cv2.warpAffine(image, translation_matrix, (w, h))
+    plt.figure(figsize=(15,7))
+    plt.imshow(lagimage,cmap='gray',vmax=lagimage.max(),vmin=lagimage.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    
+    
+    center = (int(w / 2), int(h / 2))
+    rotation_matrix = cv2.getRotationMatrix2D(center, -45, 0.6)
+    rotated = cv2.warpAffine(image, rotation_matrix, (w, h))
+    plt.figure(figsize=(15,7))
+    plt.imshow(rotated,cmap='gray',vmax=rotated.max(),vmin=rotated.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    
+    rotated = cv2.rotate(image, cv2.ROTATE_180)
+    plt.figure(figsize=(15,7))
+    plt.imshow(rotated,cmap='gray',vmax=rotated.max(),vmin=rotated.min())
+    #plt.grid(True)
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    
+    
+    
     
     ret, thresh = cv2.threshold(edges, 15, 30, 0)
     plt.figure(figsize=(15,7))
