@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[6]:
 
 
 from PIL import Image
@@ -383,7 +383,7 @@ def imageground(image):
 
     
     
-import statistics   
+    
 def groundimage(image):
     # Вычисляем маску фона
     image=np.uint8(image)
@@ -405,15 +405,7 @@ def groundimage(image):
     foreground=sure_fg
     
     foreground=cv2.normalize(foreground, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
-    #print(background.dtype)
-    #print(foreground.dtype)
-    #print(type(background))
-    #print(type(foreground))
-    return np.mean(background),np.mean(foreground),np.amax(background),np.amax(foreground),statistics.mode(np.resize(
-    background,background.size)),statistics.mode(np.resize(foreground,foreground.size)),np.percentile(
-    background,90),np.percentile(foreground,90),np.percentile(background,99),np.percentile(foreground,99)
-
-    
+    return cv2.mean(background),cv2.mean(foreground)
     
 def corrfft(image1,image2):
     image1=np.uint8(image1)
@@ -622,31 +614,6 @@ def filtration(image,path,k=5):
 
     return hlpfilt
 
-def outlinerfilter(image,k=7):
-    fig,(ax1,ax2) = plt.subplots(ncols=2)
-    ax1.imshow(image,cmap='gray',vmax=image.max(),vmin=image.min())
-    ax1.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    boxplot_2d(image[0:int(image.shape[0]),:],image[:,0:int(image.shape[1])],ax=ax2, whis=7)
-    ax2.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    q25, q75 = np.percentile(image, 25), np.percentile(image, 75)
-    iqr = q75 - q25
-    cut_off = iqr * k
-    lower, upper = q25 - cut_off, q75 + cut_off
-    y=np.where(image<upper,image,upper)
-    y=np.where(y>lower,y,lower)
-    y=np.asarray(y,dtype=np.uint8)
-    fig,(ax1,ax2) = plt.subplots(ncols=2)
-    ax1.imshow(y,cmap='gray',vmax=y.max(),vmin=y.min())
-    ax1.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    boxplot_2d(y[0:int(y.shape[0]),:],y[:,0:int(y.shape[1])],ax=ax2, whis=7)
-    ax2.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    print(y.dtype)
-    return y
-
 import os
 def findcountour(image1,image2):
     imagesource=image2
@@ -661,26 +628,8 @@ def findcountour(image1,image2):
     
     xcentr=[]
     ycentr=[]
-    meanbackground=[]
-    meanforeground=[]
-    maxbackground=[]
-    maxforeground=[]
-    modebackground=[]
-    modeforeground=[]
-    pct99background=[]
-    pct99foreground=[]
-    pct90background=[]
-    pct90foreground=[]
-    meanbackgroundrect=[]
-    meanforegroundrect=[]
-    maxbackgroundrect=[]
-    maxforegroundrect=[]
-    modebackgroundrect=[]
-    modeforegroundrect=[]
-    pct99backgroundrect=[]
-    pct99foregroundrect=[]
-    pct90backgroundrect=[]
-    pct90foregroundrect=[]
+    #background=[]
+    #foreground=[]
     xcentrrect=[]
     ycentrrect=[]
     intensivity=[]
@@ -696,8 +645,10 @@ def findcountour(image1,image2):
     x4rect=[]
     y4rect=[]
     intensivityrect=[]
-   
-    
+    #meanrect=[]
+    #stdrect=[]
+    #mean=[]
+    #std=[]
     width=[]
     areas=[]
     perimeters=[]
@@ -713,7 +664,7 @@ def findcountour(image1,image2):
     y3=[]
     x4=[]
     y4=[]
-    ret, thresh = cv2.threshold(edges, 1, 256, 0)
+    ret, thresh = cv2.threshold(edges, 1, 2, 0)
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     
 
@@ -721,10 +672,25 @@ def findcountour(image1,image2):
     for num,i in enumerate(contours):
         M = cv2.moments(i)
         (x,y), (Width, Height), Angle= cv2.minAreaRect(i)
-        
+        #print(width)
+        #print(height)
         rect = cv2.minAreaRect(i)
         box = cv2.boxPoints(rect)
-    
+        #box=np.int0(rect)
+        #print()
+        #print(box.shape)
+        #print()
+        #print(box[0])
+        #print(box[1])
+        #print(box[2])
+        #print(box[3])
+        #print()
+        
+            
+            
+        #print(x)
+        #print(width)
+        #print(height)
         
         xcentrrect.append(x)
         ycentrrect.append(y)
@@ -743,19 +709,6 @@ def findcountour(image1,image2):
         perimetersrect.append(cv2.arcLength(i,True))
         
         intensivityrect.append(imagesource[int(np.floor(y)),int(np.floor(x))])
-        x,y,w,h = cv2.boundingRect(i)
-        meanbrect,meanfrect,maxbrect,maxfrect,modebrect,modefrect,ptc90brect,ptc90frect,ptc99brect,ptc99frect=groundimage(image1[y:y+h, x:x+w])
-       
-        meanbackgroundrect.append(meanbrect)
-        meanforegroundrect.append(meanfrect)
-        maxbackgroundrect.append(maxbrect)
-        maxforegroundrect.append(maxfrect)
-        modebackgroundrect.append(modebrect)
-        modeforegroundrect.append(modefrect)
-        pct99backgroundrect.append(ptc99brect)
-        pct99foregroundrect.append(ptc99frect)
-        pct90backgroundrect.append(ptc90brect)
-        pct90foregroundrect.append(ptc90brect)
         if M['m00'] != 0:
             cx = int(M['m10']/M['m00'])
             cy = int(M['m01']/M['m00'])
@@ -778,19 +731,6 @@ def findcountour(image1,image2):
             areas.append(cv2.contourArea(i))
             perimeters.append(cv2.arcLength(i,True))
             intensivity.append(imagesource[cy,cx])
-            x,y,w,h = cv2.boundingRect(i)
-            meanb,meanf,maxb,maxf,modeb,modef,ptc90b,ptc90f,ptc99b,ptc99f=groundimage(image1[y:y+h, x:x+w])
-       
-            meanbackground.append(meanb)
-            meanforeground.append(meanf)
-            maxbackground.append(maxb)
-            maxforeground.append(maxf)
-            modebackground.append(modeb)
-            modeforeground.append(modef)
-            pct99background.append(ptc99b)
-            pct99foreground.append(ptc99f)
-            pct90background.append(ptc90b)
-            pct90foreground.append(ptc90b)
     print('Количество')
     print(len(contours))
     print(len(xcentr))
@@ -799,30 +739,20 @@ def findcountour(image1,image2):
             
     d={'xcentr':xcentr,'ycentr':ycentr,'intensivity':intensivity,'width':width,
     'height':height,'angle':angle,'x1':x1,'y1':y1, 'x2':x2,'y2':y2,'x3':x3,
-       'y3':y3,'x4':x4,'y4':y4,'areas':areas,
-     'perimeters':perimeters,'meanbackground':meanbackground,'meanforeground':meanforeground,
-       'maxbackground':maxbackground,'modebackground':modebackground,
-       'modeforeground':modeforeground,'pct99background':pct99background,
-       'pct99foreground':pct99foreground,'pct90background':pct90background,
-       'pct90foreground':pct90foreground }
+       'y3':y3,'x4':x4,'y4':y4}
     df=pd.DataFrame(data=d)
     print(df['intensivity'].min())
     print(df['intensivity'].max())
-    df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityfilt16parwithoutbackgroundparametrsbf1.xlsx")
+    df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityfilt16parwithoutbackground.xlsx")
     d={'xcentrrect':xcentrrect,'ycentrrect':ycentrrect,'intensivityrect':intensivityrect,'widthrect':widthrect,
     'heightrect':heightrect,'anglerect':anglerect,'x1rect':x1rect,'y1rect':y1rect, 
     'x2rect':x2rect,'y2rect':y2rect,'x3rect':x3rect,'y3rect':y3rect,'x4rect':x4rect,'y4rect':y4rect,'areasrect':areasrect,
-     'perimetersrect':perimetersrect,'meanbackgroundrect':meanbackgroundrect,'meanforegroundrect':meanforegroundrect,
-       'maxbackgroundrect':maxbackgroundrect,'modebackgroundrect':modebackgroundrect,
-       'modeforegroundrect':modeforegroundrect,'pct99backgroundrect':pct99backgroundrect,
-       'pct99foregroundrect':pct99foregroundrect,'pct90backgroundrect':pct90backgroundrect,
-       'pct90foregroundrect':pct90foregroundrect }
+     'perimetersrect':perimetersrect }
     df=pd.DataFrame(data=d)
     print(df['intensivityrect'].min())
     print(df['intensivityrect'].max())
-    df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityrectfilt16parrectwithoutbackgroundparametrsbf1.xlsx")
-    
-    
+    df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityrectfilt16parrectwithoutbackground.xlsx")
+
 def main():
     image=readimage("C:/Users/evgen/Downloads/s_1_1102_c.jpg")
     imagebefore=image
@@ -838,8 +768,6 @@ def main():
                     color = 'k')   #  Цвет делений
     
     plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_beforefiltration1.jpg")
-    
-    image=outlinerfilter(image,k=3)
     
     image=filtration(image,"C:/Users/evgen/Downloads/s_1_1101_a.jpg")
     imageafter=image

@@ -688,7 +688,7 @@ def findcountour(image1,image2):
     y3=[]
     x4=[]
     y4=[]
-    ret, thresh = cv2.threshold(edges, 1, 2, 0)
+    ret, thresh = cv2.threshold(edges, 1, 256, 0)
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     
 
