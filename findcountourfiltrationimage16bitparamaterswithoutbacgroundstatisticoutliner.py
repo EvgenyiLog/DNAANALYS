@@ -351,8 +351,8 @@ def imageground(image):
     _, thresh = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
     # Убираем шум
-    kernel = np.ones((2, 2), np.uint16)
-    opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=50)
+    kernel = np.ones((1, 1), np.uint16)
+    opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=5)
     background=opening
     #backgrounds=cv2.cvtColor( background, cv2.COLOR_GRAY2BGR)
     background=cv2.normalize(background, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
@@ -365,7 +365,7 @@ def imageground(image):
     
 
     # создаем маску фона
-    sure_bg = cv2.dilate(opening, kernel, iterations=20) 
+    sure_bg = cv2.dilate(opening, kernel, iterations=2) 
 
 
     dist_transform = cv2.distanceTransform(opening, cv2.DIST_L2, 5)
@@ -379,6 +379,14 @@ def imageground(image):
     plt.imshow(foreground[0:1000,0:1000], cmap=plt.cm.gray,vmax=foreground.max(),vmin=foreground.min())
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
+    unknown = cv2.subtract(background,foreground)
+    unknown=cv2.normalize(unknown, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_unknown.jpg",unknown)
+    plt.figure(figsize=(15, 7))
+    plt.imshow(unknown[0:1000,0:1000], cmap=plt.cm.gray,vmax=unknown.max(),vmin=unknown.min())
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    
     return  background,foreground
 
     
@@ -390,13 +398,13 @@ def groundimage(image):
     _, thresh = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
     # Убираем шум
-    kernel = np.ones((2, 2), np.uint16)
-    opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=50)
+    kernel = np.ones((1, 1), np.uint16)
+    opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=5)
     background=opening
     
     background=cv2.normalize(background, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U) 
     # создаем маску фона
-    sure_bg = cv2.dilate(opening, kernel, iterations=20) 
+    sure_bg = cv2.dilate(opening, kernel, iterations=2) 
 
 
     dist_transform = cv2.distanceTransform(opening, cv2.DIST_L2, 5)
@@ -405,6 +413,8 @@ def groundimage(image):
     foreground=sure_fg
     
     foreground=cv2.normalize(foreground, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
+    unknown = cv2.subtract(background,foreground)
+    unknown=cv2.normalize(unknown, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
     #print(background.dtype)
     #print(foreground.dtype)
     #print(type(background))
@@ -644,7 +654,7 @@ def outlinerfilter(image,k=7):
     boxplot_2d(y[0:int(y.shape[0]),:],y[:,0:int(y.shape[1])],ax=ax2, whis=7)
     ax2.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
-    print(y.dtype)
+    #print(y.dtype)
     return y
 
 import os
@@ -847,7 +857,7 @@ def main():
     
     imageafter8b=imageafter
     imageafter=cv2.normalize(imageafter, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
-    imageafter=cv2.subtract(imageafter,backgroundafter)
+    imageafter=cv2.subtract(imageafter,backgroundafter)#foregroundafter
     print(f'Max after filtration={np.amax(imageafter)}')
     print(f'Min after filtration={np.amin(imageafter)}')
     #image=filtration(image,"C:/s_1_1101_a.jpg")
