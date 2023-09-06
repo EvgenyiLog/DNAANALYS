@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[4]:
 
 
 from PIL import Image
@@ -668,7 +668,9 @@ def findcountour(image1,image2):
     #plt.grid(True)
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
-    
+    h0, w0 = image1.shape[:2]
+    print(h0//2)
+    print(w0//2)
     xcentr=[]
     ycentr=[]
     meanbackground=[]
@@ -706,7 +708,8 @@ def findcountour(image1,image2):
     x4rect=[]
     y4rect=[]
     intensivityrect=[]
-   
+    dcentrrect=[]
+    dcentr=[]
     
     width=[]
     areas=[]
@@ -735,7 +738,7 @@ def findcountour(image1,image2):
         rect = cv2.minAreaRect(i)
         box = cv2.boxPoints(rect)
     
-        
+        dcentrrect.append(np.sqrt(np.square(np.subtract(x,h0//2))+np.square(np.subtract(y,w0//2))))
         xcentrrect.append(x)
         ycentrrect.append(y)
         widthrect.append(Width)
@@ -792,7 +795,7 @@ def findcountour(image1,image2):
             perimeters.append(cv2.arcLength(i,True))
             intensivity.append(imagesource[cy,cx])
             x,y,w,h = cv2.boundingRect(i)
-            
+            dcentr.append(np.sqrt(np.square(np.subtract(cx,h0//2))+np.square(np.subtract(cy,w0//2))))
             #imagef=cv2.fillPoly(imageb,i, color=(255,255,255))
             #image2=cv2.bitwise_and(image1,imagef)
             meanb,meanf,maxb,maxf,modeb,modef,ptc90b,ptc90f,ptc99b,ptc99f=groundimage(image1[y:y+h, x:x+w])
@@ -820,7 +823,7 @@ def findcountour(image1,image2):
        'maxbackground':maxbackground,'modebackground':modebackground,
        'modeforeground':modeforeground,'pct99background':pct99background,
        'pct99foreground':pct99foreground,'pct90background':pct90background,
-       'pct90foreground':pct90foreground }
+       'pct90foreground':pct90foreground,'dcentr':dcentr}
     df=pd.DataFrame(data=d)
     print(df['intensivity'].min())
     print(df['intensivity'].max())
@@ -832,7 +835,7 @@ def findcountour(image1,image2):
        'maxbackgroundrect':maxbackgroundrect,'modebackgroundrect':modebackgroundrect,
        'modeforegroundrect':modeforegroundrect,'pct99backgroundrect':pct99backgroundrect,
        'pct99foregroundrect':pct99foregroundrect,'pct90backgroundrect':pct90backgroundrect,
-       'pct90foregroundrect':pct90foregroundrect }
+       'pct90foregroundrect':pct90foregroundrect,'dcentrrect':dcentrrect }
     df=pd.DataFrame(data=d)
     print(df['intensivityrect'].min())
     print(df['intensivityrect'].max())
