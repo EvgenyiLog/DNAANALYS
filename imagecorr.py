@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[8]:
 
 
 import cv2
@@ -146,93 +146,29 @@ def tiffreader(path):
     print(image.dtype)
     return image
 
-def filtration(image):
-    hist = cv2.calcHist([image],[0],None,[4096],[0,4096])
-    print(np.amax(hist))
-    print(np.argmax(hist))
-    #print(type(hist))
-    h=list(hist)
-    index05max=[]
-    for i in h:
-        if i>=0.5*np.amax(hist):
-            index05max.append(h.index(i))
-    index05max=np.asarray(index05max,dtype=np.int64)  
-    index99max=[]
-    for i in h:
-        if i>=np.percentile(hist,99):
-            index99max.append(h.index(i))
-    index05max=np.asarray(index05max,dtype=np.int64)
-    #print(index05max.ravel())
-    print(np.amax(index05max))
-    print(np.amax(index99max))
-    plt.figure()
-    plt.plot(hist)
-    plt.axvline(x=np.argmax(hist), color='b', label='max')
-    plt.axvline(x=np.amax(index05max), color='g', label='max')
-    plt.axvline(x=np.amax(index99max), color='k', label='max')
-    plt.grid(True)
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
+def corrimage(image1,image2):
+    corr = cv2.matchTemplate(image1,image2,cv2.TM_CCOEFF)
+    print(corr.dtype)
+    print(np.amax(corr))
+    corr = cv2.matchTemplate(image1,image2,cv2.TM_CCORR)
+    print(corr.dtype)
+    print(np.amax(corr))
+    corr = cv2.matchTemplate(image1,image2,cv2.TM_SQDIFF)
+    print(corr.dtype)
+    print(np.amax(corr))
     
-    plt.figure()
-    plt.imshow(image[0:500,0:500],cmap='gray',vmax=image.max(),vmin=image.min())
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
     
-    fig,(ax1,ax2) = plt.subplots(ncols=2)
-    ax1.imshow(image,cmap='gray',vmax=image.max(),vmin=image.min())
-    ax1.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    boxplot_2d(image[0:int(image.shape[0]),:],image[:,0:int(image.shape[1])],ax=ax2, whis=7)
-    ax2.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    image=np.where(image<np.amax(index05max),image,0)
-    plt.figure()
-    plt.imshow(image[0:100,0:100],cmap='gray',vmax=image.max(),vmin=image.min())
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    print(np.amax(image))
-    print(image.dtype)
-    fig,(ax1,ax2) = plt.subplots(ncols=2)
-    ax1.imshow(image,cmap='gray',vmax=image.max(),vmin=image.min())
-    ax1.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    boxplot_2d(image[0:int(image.shape[0]),:],image[:,0:int(image.shape[1])],ax=ax2, whis=7)
-    ax2.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    plt.figure()
-    plt.imshow(image[0:500,0:500],cmap='gray',vmax=image.max(),vmin=image.min())
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    return image
-
-import skimage
-from scipy import ndimage as ndi
-def clusters(image):
-    x,y=skimage.morphology.local_maxima(image,indices=True)
-    print(len(x))
-    maxima=skimage.morphology.h_maxima(image,np.mean(image))
-    print(len(maxima)/2)
-    coordinates=skimage.feature.peak_local_max(image,min_distance=3)
-    print(coordinates)
-
-
 def main():
-    image=tiffreader("C:/Users/evgen/Downloads/s_1_1102_c.tif")
-    image=filtration(image)
-    clusters(image)
+    image1=tiffreader("C:/Users/evgen/Downloads/s_1_1102_c.tif")
+    image2=tiffreader("C:/Users/evgen/Downloads/s_1_1102_a.tif")
+    image1=readimage("C:/Users/evgen/Downloads/s_1_1102_c.jpg")
+    image2=readimage("C:/Users/evgen/Downloads/s_1_1102_a.jpg")
+    corrimage(image1,image2)
     plt.show()
     
     
 if __name__ == "__main__":
-    main()   
-    
-
-
-# In[ ]:
-
-
-
+    main()
 
 
 # In[ ]:
