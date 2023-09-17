@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[8]:
+# In[10]:
 
 
 import cv2
@@ -148,14 +148,58 @@ def tiffreader(path):
 
 def corrimage(image1,image2):
     corr = cv2.matchTemplate(image1,image2,cv2.TM_CCOEFF)
+    
     print(corr.dtype)
     print(np.amax(corr))
+    print(np.amin(corr))
+    print(corr.shape)
+    corr=cv2.normalize(corr, None, 0, 4095, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_a_ccoef.jpg",corr)
     corr = cv2.matchTemplate(image1,image2,cv2.TM_CCORR)
+    
     print(corr.dtype)
     print(np.amax(corr))
+    print(np.amin(corr))
+    corr=cv2.normalize(corr, None, 0, 4095, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_a_ccor.jpg",corr)
     corr = cv2.matchTemplate(image1,image2,cv2.TM_SQDIFF)
+    
     print(corr.dtype)
     print(np.amax(corr))
+    print(np.amin(corr))
+    corr=cv2.normalize(corr, None, 0, 4095, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_a_sdqif.jpg",corr)
+    
+    corr = cv2.matchTemplate(image1,image2,cv2.TM_CCOEFF_NORMED)
+    
+    print(corr.dtype)
+    print(np.amax(corr))
+    print(np.amin(corr))
+    print(corr.shape)
+    corr=cv2.normalize(corr, None, 0, 4095, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_a_ccoef_n.jpg",corr)
+    corr = cv2.matchTemplate(image1,image2,cv2.TM_CCORR_NORMED)
+    
+    print(corr.dtype)
+    print(np.amax(corr))
+    print(np.amin(corr))
+    corr=cv2.normalize(corr, None, 0, 4095, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_a_ccor_n.jpg",corr)
+    corr = cv2.matchTemplate(image1,image2,cv2.TM_SQDIFF_NORMED)
+    
+    print(corr.dtype)
+    print(np.amax(corr))
+    print(np.amin(corr))
+    corr=cv2.normalize(corr, None, 0, 4095, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_a_sqdiff_n.jpg",corr)
+    
+    
+    image=cv2.absdiff(image1,image2)
+    image=cv2.normalize(image, None, 0, 4095, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
+    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_a_absiff.jpg",image)
+    
+    
+    
     
     
 def main():

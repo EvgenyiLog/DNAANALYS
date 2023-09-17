@@ -157,19 +157,20 @@ def filtration(image):
         if i>=0.5*np.amax(hist):
             index05max.append(h.index(i))
     index05max=np.asarray(index05max,dtype=np.int64)  
-    index99max=[]
+    index99prec=[]
     for i in h:
         if i>=np.percentile(hist,99):
-            index99max.append(h.index(i))
+            index99prec.append(h.index(i))
     index05max=np.asarray(index05max,dtype=np.int64)
+    index99prec=np.asarray(index99prec,dtype=np.int64)
     #print(index05max.ravel())
     print(np.amax(index05max))
-    print(np.amax(index99max))
+    print(np.amax(index99prec))
     plt.figure()
     plt.plot(hist)
     plt.axvline(x=np.argmax(hist), color='b', label='max')
-    plt.axvline(x=np.amax(index05max), color='g', label='max')
-    plt.axvline(x=np.amax(index99max), color='k', label='max')
+    plt.axvline(x=np.amax(index05max), color='g', label='0.5*max')
+    plt.axvline(x=np.amax(index99prec), color='k', label='99per')
     plt.grid(True)
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
@@ -204,6 +205,7 @@ def filtration(image):
     plt.imshow(image[0:500,0:500],cmap='gray',vmax=image.max(),vmin=image.min())
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
+    
     return image
 
 import skimage
@@ -211,9 +213,21 @@ from scipy import ndimage as ndi
 def clusters(image):
     x,y=skimage.morphology.local_maxima(image,indices=True)
     print(len(x))
+    plt.figure()
+    plt.imshow(image,cmap='gray',vmax=image.max(),vmin=image.min())
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    plt.plot(x,y, 'r.')
+    
     maxima=skimage.morphology.h_maxima(image,np.mean(image))
     print(len(maxima)/2)
-    coordinates=skimage.feature.peak_local_max(image,min_distance=3)
+    coordinates=skimage.feature.peak_local_max(image,min_distance=3) 
+    plt.figure()
+    plt.imshow(image,cmap='gray',vmax=image.max(),vmin=image.min())
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    plt.plot(coordinates[:, 1], coordinates[:, 0], 'r.')
+    
     print(coordinates)
 
 
