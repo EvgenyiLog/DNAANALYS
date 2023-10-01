@@ -243,9 +243,6 @@ def readimage(path):
     
     image = cv2.imread(path,0)
     #print(image.shape)
-    h, w = image.shape[:2]
-    print(f'Weigth= {w}')
-    print(f'Heigth= {h}')
     print(image.dtype)
     return image
 
@@ -253,9 +250,6 @@ def tiffreader(path):
     image=cv2.imread(path,-1)
     #print(image.shape)
     print(image.dtype)
-    h, w = image.shape[:2]
-    print(f'Weigth= {w}')
-    print(f'Heigth= {h}')
     return image
 
 import numpy as np
@@ -351,7 +345,7 @@ def imageground(image):
     _, thresh = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
     # Убираем шум
-    kernel = np.ones((1, 1), np.uint16)
+    kernel = np.ones((2, 2), np.uint16)
     opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=50)
     background=opening
     #backgrounds=cv2.cvtColor( background, cv2.COLOR_GRAY2BGR)
@@ -361,7 +355,17 @@ def imageground(image):
     plt.imshow(background[0:1000,0:1000], cmap=plt.cm.gray,vmax=background.max(),vmin=background.min())
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
-    
+    try:
+        fig,(ax1,ax2) = plt.subplots(ncols=2)
+        ax1.imshow(background,cmap='gray',vmax=background.max(),vmin=background.min())
+        ax1.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+        boxplot_2d(background[0:int(background.shape[0]),:],background[:,0:int(background.shape[1])],ax=ax2, whis=1.5)
+        ax2.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+        plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_backgroundboxplot.jpg")
+    except:
+        pass
     
 
     # создаем маску фона
@@ -379,50 +383,19 @@ def imageground(image):
     plt.imshow(foreground[0:1000,0:1000], cmap=plt.cm.gray,vmax=foreground.max(),vmin=foreground.min())
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
-    unknown = cv2.subtract(background,foreground)
-    unknown=cv2.normalize(unknown, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
-    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_c_unknown.jpg",unknown)
-    plt.figure(figsize=(15, 7))
-    plt.imshow(unknown[0:1000,0:1000], cmap=plt.cm.gray,vmax=unknown.max(),vmin=unknown.min())
-    plt.tick_params(labelsize =20,#  Размер подписи
+    
+    try:
+        fig,(ax1,ax2) = plt.subplots(ncols=2)
+        ax1.imshow(foreground,cmap='gray',vmax=foreground.max(),vmin=foreground.min())
+        ax1.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
+        boxplot_2d(foreground[0:int(foreground.shape[0]),:],foreground[:,0:int(foreground.shape[1])],ax=ax2, whis=7)
+        ax2.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+        plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_foregroundboxplot.jpg")
+    except:
+        pass
     
-    return  background,foreground
-
-    
-    
-import statistics   
-def groundimage(image):
-    # Вычисляем маску фона
-    image=np.uint8(image)
-    _, thresh = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-
-    # Убираем шум
-    kernel = np.ones((1, 1), np.uint16)
-    opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=5)
-    background=opening
-    
-    background=cv2.normalize(background, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U) 
-    # создаем маску фона
-    sure_bg = cv2.dilate(opening, kernel, iterations=2) 
-
-
-    dist_transform = cv2.distanceTransform(opening, cv2.DIST_L2, 5)
-    _, sure_fg = cv2.threshold(dist_transform, 0.7 * dist_transform.max(), 255, 0)  
-
-    foreground=sure_fg
-    
-    foreground=cv2.normalize(foreground, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
-    unknown = cv2.subtract(background,foreground)
-    unknown=cv2.normalize(unknown, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
-    #print(background.dtype)
-    #print(foreground.dtype)
-    #print(type(background))
-    #print(type(foreground))
-    return np.mean(background),np.mean(foreground),np.amax(background),np.amax(foreground),statistics.mode(np.resize(
-    background,background.size)),statistics.mode(np.resize(foreground,foreground.size)),np.percentile(
-    background,90),np.percentile(foreground,90),np.percentile(background,99),np.percentile(foreground,99)
-
     
     
 def corrfft(image1,image2):
@@ -431,42 +404,17 @@ def corrfft(image1,image2):
     dft1 = cv2.dft(np.float32(image1),flags = cv2.DFT_COMPLEX_OUTPUT)
     dft2 = cv2.dft(np.float32(image2),flags = cv2.DFT_COMPLEX_OUTPUT)
     corr=cv2.multiply(dft1,dft2.conj())
-    image1=np.uint8(image1)
-    image2=np.uint8(image2)
-    dft1 = cv2.dft(np.float32(image1),flags = cv2.DFT_COMPLEX_OUTPUT)
-    dft2 = cv2.dft(np.float32(image2),flags = cv2.DFT_COMPLEX_OUTPUT)
-    corr=cv2.multiply(dft1,dft2.conj())
-    corr=cv2.idft(corr)
-    corr=cv2.normalize(corr, None, 0, 4096, cv2.NORM_MINMAX, cv2.CV_16U)
-    print(corr.dtype)
-    print('Corr extremum')
-    print(np.amax(corr[:,:,0]))
-    print(np.amin(corr[:,:,0]))
-    print(np.amax(corr[:,:,1]))
-    print(np.amin(corr[:,:,1]))
-    print(np.argmax(corr[:,:,0]))
-    print(np.argmin(corr[:,:,0]))
-    print(np.argmax(corr[:,:,1]))
-    print(np.argmin(corr[:,:,1]))
-    print()
-    
-    plt.figure(figsize=(15,7))
-    plt.subplot(121)
-    plt.imshow(corr[0:1000,0:1000,0],cmap='gray',vmax=corr.max(),vmin=corr.min())
-    plt.grid(True)
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    plt.subplot(122)
-    plt.imshow(corr[0:1000,0:1000,1],cmap='gray',vmax=corr.max(),vmin=corr.min())
-    plt.grid(True)
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    
+    corr/=np.amax(corr)
+    #plt.figure(figsize=(15,7))
+    #plt.imshow(corr[0:1000,0:1000],cmap='gray',vmax=corr.max(),vmin=corr.min())
+    #plt.grid(True)
+    #plt.tick_params(labelsize =20,#  Размер подписи
+                    #color = 'k')   #  Цвет делений
     
 
 from sklearn.decomposition import FastICA,PCA
 from skimage.feature import hog
-def filtration(image,path,k=5):
+def filtration(image,path):
     'path to file correlate'
     'image filtration'
     'фильтрация возвращает фильтрованное изображение'
@@ -519,15 +467,9 @@ def filtration(image,path,k=5):
 
     image=cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
     slp,hlp=sporco.signal.tikhonov_filter(image,3)
-    #hlp=ndimage.median_filter(hlp, size=11)
-    hlp=cv2.medianBlur(hlp,7)
-    #hlp=hlp<np.percentile(hlp, 90)
-    print(f'hlp max={np.amax(hlp)}')
-    #hlp=hlp>np.percentile(hlp, 10)
+    hlp=ndimage.median_filter(hlp, size=11)
     hlp=np.where(hlp<np.percentile(hlp, 90),hlp,0)
-    print(f'hlp max={np.amax(hlp)}')
-    #hlp=np.where(hlp<np.percentile(hlp, 90),hlp,0)
-    
+    #hlp=hlp>np.percentile(hlp, 10)
     image2 = readimage(path)
     #image2=image2[0:1000,0:1000]
     image2=np.asarray(image2,dtype=np.uint8)
@@ -557,11 +499,6 @@ def filtration(image,path,k=5):
     try:
         hlpf=hlp-hlp.mean()-cv2.multiply(res,image2)
         hlpfilt=np.asarray(hlpf,dtype=np.uint8)
-        plt.figure(figsize=(15,7))
-        plt.imshow(hlpfilt[0:1000,0:1000],cmap='gray',vmax=hlpfilt.max(),vmin=hlpfilt.min())
-        #plt.grid(True)
-        plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
         hlpfilt=cv2.cvtColor(hlpfilt,cv2.COLOR_GRAY2RGB)
         cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_cfilt1.jpg",hlpfilt)
     except:
@@ -589,8 +526,6 @@ def filtration(image,path,k=5):
     eng.quit()
     hlpfilt=cv2.cvtColor(hlpfilt,cv2.COLOR_RGB2GRAY)
     
-    
-    
     sigma_est =skimage.restoration.estimate_sigma(hlpfilt)
     imagew=skimage.restoration.denoise_wavelet(hlpfilt,sigma=sigma_est)
     #plt.figure(figsize=(15,7))
@@ -598,12 +533,9 @@ def filtration(image,path,k=5):
     #plt.grid(True)
     #plt.tick_params(labelsize =20,#  Размер подписи
                     #color = 'k')   #  Цвет делений
-    try:
-        psnr=peak_signal_noise_ratio(hlpfilt, std_convoluted(hlpfilt,2))
-        print(f'PSNR after filtration={psnr}')
-        print(f'PSNR after filtration={20*np.log10(1/hlpfilt.std())}')
-    except:
-        pass
+    psnr=peak_signal_noise_ratio(hlpfilt, std_convoluted(hlpfilt,2))
+    print(f'PSNR after filtration={psnr}')
+    print(f'PSNR after filtration={20*np.log10(1/hlpfilt.std())}')
     try:
         mse = mean_squared_error(hlpfilt,hlpfilt.T)
         print(f'PSNR after filtration={20*np.log10(1/mse)}')
@@ -628,38 +560,8 @@ def filtration(image,path,k=5):
     #plt.grid(True)
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
-    plt.figure(figsize=(15,7))
-    plt.imshow(entr_img[0:1000,0:1000],cmap='gray',vmax=entr_img.max(),vmin=entr_img.min())
-    #plt.grid(True)
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
 
     return hlpfilt
-
-def outlinerfilter(image,k=7):
-    fig,(ax1,ax2) = plt.subplots(ncols=2)
-    ax1.imshow(image,cmap='gray',vmax=image.max(),vmin=image.min())
-    ax1.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    boxplot_2d(image[0:int(image.shape[0]),:],image[:,0:int(image.shape[1])],ax=ax2, whis=7)
-    ax2.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    q25, q75 = np.percentile(image, 25), np.percentile(image, 75)
-    iqr = q75 - q25
-    cut_off = iqr * k
-    lower, upper = q25 - cut_off, q75 + cut_off
-    y=np.where(image<upper,image,upper)
-    y=np.where(y>lower,y,lower)
-    y=np.asarray(y,dtype=np.uint8)
-    fig,(ax1,ax2) = plt.subplots(ncols=2)
-    ax1.imshow(y,cmap='gray',vmax=y.max(),vmin=y.min())
-    ax1.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    boxplot_2d(y[0:int(y.shape[0]),:],y[:,0:int(y.shape[1])],ax=ax2, whis=7)
-    ax2.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    #print(y.dtype)
-    return y
 
 import os
 def findcountour(image1,image2):
@@ -672,186 +574,72 @@ def findcountour(image1,image2):
     #plt.grid(True)
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
-    h0, w0 = image1.shape[:2]
-    print(h0//2)
-    print(w0//2)
+
     xcentr=[]
     ycentr=[]
-    meanbackground=[]
-    meanforeground=[]
-    maxbackground=[]
-    maxforeground=[]
-    modebackground=[]
-    modeforeground=[]
-    pct99background=[]
-    pct99foreground=[]
-    pct90background=[]
-    pct90foreground=[]
-    meanbackgroundrect=[]
-    meanforegroundrect=[]
-    maxbackgroundrect=[]
-    maxforegroundrect=[]
-    modebackgroundrect=[]
-    modeforegroundrect=[]
-    pct99backgroundrect=[]
-    pct99foregroundrect=[]
-    pct90backgroundrect=[]
-    pct90foregroundrect=[]
     xcentrrect=[]
     ycentrrect=[]
     intensivity=[]
-    widthrect=[]
-    heightrect=[]
-    anglerect=[]
-    x1rect=[]
-    y1rect=[]
-    x2rect=[]
-    y2rect=[]
-    x3rect=[]
-    y3rect=[]
-    x4rect=[]
-    y4rect=[]
     intensivityrect=[]
-    dcentrrect=[]
-    dcentr=[]
-    
-    width=[]
-    areas=[]
-    perimeters=[]
-    areasrect=[]
-    perimetersrect=[]
-    height=[]
-    angle=[]
-    x1=[]
-    y1=[]
-    x2=[]
-    y2=[]
-    x3=[]
-    y3=[]
-    x4=[]
-    y4=[]
-    ret, thresh = cv2.threshold(edges, 1, 256, 0)
+    ret, thresh = cv2.threshold(edges, 1, 2, 0)
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     
-    imageb=np.zeros_like(image1,dtype=np.uint8)
+
+    image=np.zeros_like(image1)
     
     for num,i in enumerate(contours):
         M = cv2.moments(i)
-        (x,y), (Width, Height), Angle= cv2.minAreaRect(i)
-        
-        rect = cv2.minAreaRect(i)
-        box = cv2.boxPoints(rect)
-    
-        dcentrrect.append(np.sqrt(np.square(np.subtract(x,h0//2))+np.square(np.subtract(y,w0//2))))
+        (x,y), (width, height), angle= cv2.minAreaRect(i)
+        #print(width)
+        #print(height)
+        imagecrect=cv2.fillPoly(image, i, color=(255, 255, 255))
+            
+            
+        print(x)
+        print(y)
+        #print(width)
+        #print(height)
         xcentrrect.append(x)
         ycentrrect.append(y)
-        widthrect.append(Width)
-        heightrect.append(Height)
-        anglerect.append(Angle)
-        x1rect.append(box[0][0])
-        y1rect.append(box[0][1])
-        x2rect.append(box[1][0])
-        y2rect.append(box[1][1])
-        x3rect.append(box[2][0])
-        y3rect.append(box[2][1])
-        x4rect.append(box[3][0])
-        y4rect.append(box[3][1])
-        areasrect.append(cv2.contourArea(i))
-        perimetersrect.append(cv2.arcLength(i,True))
-        
         intensivityrect.append(imagesource[int(np.floor(y)),int(np.floor(x))])
-        x,y,w,h = cv2.boundingRect(i)
-        imagef=cv2.fillPoly(imageb,i, color=(255,255,255))
-        image2=cv2.bitwise_and(image1,imagef)
-        image2=image1
-        meanbrect,meanfrect,maxbrect,maxfrect,modebrect,modefrect,ptc90brect,ptc90frect,ptc99brect,ptc99frect=groundimage(image2[y:y+h, x:x+w])
-       
-        meanbackgroundrect.append(meanbrect)
-        meanforegroundrect.append(meanfrect)
-        maxbackgroundrect.append(maxbrect)
-        maxforegroundrect.append(maxfrect)
-        modebackgroundrect.append(modebrect)
-        modeforegroundrect.append(modefrect)
-        pct99backgroundrect.append(ptc99brect)
-        pct99foregroundrect.append(ptc99frect)
-        pct90backgroundrect.append(ptc90brect)
-        pct90foregroundrect.append(ptc90brect)
         if M['m00'] != 0:
             cx = int(M['m10']/M['m00'])
             cy = int(M['m01']/M['m00'])
             xcentr.append(cx)
             ycentr.append(cy)
-            (x,y), (Width, Height), Angle= cv2.minAreaRect(i)
-            width.append(Width)
-            height.append(Height)
-            angle.append(Angle)
-            rect = cv2.minAreaRect(i)
-            box = cv2.boxPoints(rect)
-            x1.append(box[0][0])
-            y1.append(box[0][1])
-            x2.append(box[1][0])
-            y2.append(box[1][1])
-            x3.append(box[2][0])
-            y3.append(box[2][1])
-            x4.append(box[3][0])
-            y4.append(box[3][1])
-            areas.append(cv2.contourArea(i))
-            perimeters.append(cv2.arcLength(i,True))
+            imageccountour=cv2.fillPoly(image, i, color=(255, 255, 255))
             intensivity.append(imagesource[cy,cx])
-            x,y,w,h = cv2.boundingRect(i)
-            dcentr.append(np.sqrt(np.square(np.subtract(cx,h0//2))+np.square(np.subtract(cy,w0//2))))
-            #imagef=cv2.fillPoly(imageb,i, color=(255,255,255))
-            #image2=cv2.bitwise_and(image1,imagef)
-            meanb,meanf,maxb,maxf,modeb,modef,ptc90b,ptc90f,ptc99b,ptc99f=groundimage(image1[y:y+h, x:x+w])
-       
-            meanbackground.append(meanb)
-            meanforeground.append(meanf)
-            maxbackground.append(maxb)
-            maxforeground.append(maxf)
-            modebackground.append(modeb)
-            modeforeground.append(modef)
-            pct99background.append(ptc99b)
-            pct99foreground.append(ptc99f)
-            pct90background.append(ptc90b)
-            pct90foreground.append(ptc90b)
     print('Количество')
     print(len(contours))
     print(len(xcentr))
     print()
         
             
-    d={'xcentr':xcentr,'ycentr':ycentr,'intensivity':intensivity,'width':width,
-    'height':height,'angle':angle,'x1':x1,'y1':y1, 'x2':x2,'y2':y2,'x3':x3,
-       'y3':y3,'x4':x4,'y4':y4,'areas':areas,
-     'perimeters':perimeters,'meanbackground':meanbackground,'meanforeground':meanforeground,
-       'maxbackground':maxbackground,'modebackground':modebackground,
-       'modeforeground':modeforeground,'pct99background':pct99background,
-       'pct99foreground':pct99foreground,'pct90background':pct90background,
-       'pct90foreground':pct90foreground,'dcentr':dcentr}
+    d={'xcentr':xcentr,'ycentr':ycentr,'intensivity':intensivity}
     df=pd.DataFrame(data=d)
     print(df['intensivity'].min())
     print(df['intensivity'].max())
-    df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityfilt16parwithoutbackgroundparametrsbf2.xlsx")
-    d={'xcentrrect':xcentrrect,'ycentrrect':ycentrrect,'intensivityrect':intensivityrect,'widthrect':widthrect,
-    'heightrect':heightrect,'anglerect':anglerect,'x1rect':x1rect,'y1rect':y1rect, 
-    'x2rect':x2rect,'y2rect':y2rect,'x3rect':x3rect,'y3rect':y3rect,'x4rect':x4rect,'y4rect':y4rect,'areasrect':areasrect,
-     'perimetersrect':perimetersrect,'meanbackgroundrect':meanbackgroundrect,'meanforegroundrect':meanforegroundrect,
-       'maxbackgroundrect':maxbackgroundrect,'modebackgroundrect':modebackgroundrect,
-       'modeforegroundrect':modeforegroundrect,'pct99backgroundrect':pct99backgroundrect,
-       'pct99foregroundrect':pct99foregroundrect,'pct90backgroundrect':pct90backgroundrect,
-       'pct90foregroundrect':pct90foregroundrect,'dcentrrect':dcentrrect }
+    #df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityfilt16.xlsx")
+    d={'xcentrrect':xcentrrect,'ycentrrect':ycentrrect,'intensivityrect':intensivityrect}
     df=pd.DataFrame(data=d)
     print(df['intensivityrect'].min())
     print(df['intensivityrect'].max())
-    df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityrectfilt16parrectwithoutbackgroundparametrsbf2.xlsx")
+    #df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityrectfilt16.xlsx")
     
-    
+    fig,(ax1,ax2) = plt.subplots(ncols=2,figsize=(15,7))
+    ax1.imshow(imageccountour[180:200,180:200],cmap='gray',vmax=imageccountour.max(),vmin=imageccountour.min())
+    ax1.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    ax2.imshow(imagecrect[180:200,180:200],cmap='gray',vmax=imagecrect.max(),vmin=imagecrect.min())
+    ax2.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_countoursfp.jpg")
+
 def main():
     image=readimage("C:/Users/evgen/Downloads/s_1_1102_c.jpg")
     imagebefore=image
-    backgroundbefore,foregroundbefore=imageground(imagebefore)
-    imagebefore= cv2.normalize(imagebefore, None, 0, 4095, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
-    
+    imageground(imagebefore)
+    imagebefore= cv2.normalize(imagebefore, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
     fig,(ax1,ax2) = plt.subplots(ncols=2)
     ax1.imshow(imagebefore,cmap='gray',vmax=imagebefore.max(),vmin=imagebefore.min())
     ax1.tick_params(labelsize =20,#  Размер подписи
@@ -860,23 +648,14 @@ def main():
     ax2.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     
-    plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_beforefiltration1.jpg")
-    
-    image=outlinerfilter(image,k=3)
+    #plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_beforefiltration.jpg")
     
     image=filtration(image,"C:/Users/evgen/Downloads/s_1_1101_a.jpg")
     imageafter=image
-    backgroundafter,foregroundafter=imageground(imageafter)
-    
+    imageground(imageafter)
+
     imageafter8b=imageafter
-    imageafter=cv2.normalize(imageafter, None, 0, 4095, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
-    imageafter=cv2.subtract(imageafter,backgroundafter)#foregroundafter
-    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_cfilt2.jpg",imageafter)
-    afterimage=cv2.absdiff(imageafter,backgroundafter)
-    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_cfilt3.jpg",afterimage)
-    #imageafter=cv2.bitwise_and(imageafter,foregroundafter)
-    print(f'Max after filtration={np.amax(imageafter)}')
-    print(f'Min after filtration={np.amin(imageafter)}')
+    imageafter=cv2.normalize(imageafter, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
     #image=filtration(image,"C:/s_1_1101_a.jpg")
     fig,(ax1,ax2) = plt.subplots(ncols=2)
     ax1.imshow(imageafter,cmap='gray',vmax=imageafter.max(),vmin=imageafter.min())
@@ -885,18 +664,18 @@ def main():
     boxplot_2d(imageafter[0:int(imageafter.shape[0]),:],imageafter[:,0:int(imageafter.shape[1])],ax=ax2, whis=7)
     ax2.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
-    plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_afterfiltration1.jpg")
+    #plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_afterfiltration.jpg")
     
     plt.figure(figsize=(15,7))
     plt.subplot(211)
-    plt.plot(imagebefore[:,600],'k')
-    plt.plot(imageafter[:,600],'r')
+    plt.plot(imagebefore[:,500],'k')
+    plt.plot(imageafter[:,500],'r')
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     plt.grid(True)
     plt.subplot(212)
-    plt.plot(imagebefore[600,:],'g')
-    plt.plot(imageafter[600,:],'b')
+    plt.plot(imagebefore[500,:],'g')
+    plt.plot(imageafter[500,:],'b')
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     plt.grid(True)
@@ -907,12 +686,6 @@ def main():
     
 if __name__ == "__main__":
     main()
-
-
-# In[ ]:
-
-
-
 
 
 # In[ ]:

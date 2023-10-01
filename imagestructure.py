@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[6]:
 
 
 from PIL import Image
@@ -387,7 +387,7 @@ def imageground(image):
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     
-    return  background,foreground
+    return  background,foreground,unknown
 
     
     
@@ -399,12 +399,12 @@ def groundimage(image):
 
     # Убираем шум
     kernel = np.ones((1, 1), np.uint16)
-    opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=5)
+    opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=50)
     background=opening
     
     background=cv2.normalize(background, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U) 
     # создаем маску фона
-    sure_bg = cv2.dilate(opening, kernel, iterations=2) 
+    sure_bg = cv2.dilate(opening, kernel, iterations=20) 
 
 
     dist_transform = cv2.distanceTransform(opening, cv2.DIST_L2, 5)
@@ -521,12 +521,8 @@ def filtration(image,path,k=5):
     slp,hlp=sporco.signal.tikhonov_filter(image,3)
     #hlp=ndimage.median_filter(hlp, size=11)
     hlp=cv2.medianBlur(hlp,7)
-    #hlp=hlp<np.percentile(hlp, 90)
-    print(f'hlp max={np.amax(hlp)}')
+    hlp=hlp<np.percentile(hlp, 90)
     #hlp=hlp>np.percentile(hlp, 10)
-    hlp=np.where(hlp<np.percentile(hlp, 90),hlp,0)
-    print(f'hlp max={np.amax(hlp)}')
-    #hlp=np.where(hlp<np.percentile(hlp, 90),hlp,0)
     
     image2 = readimage(path)
     #image2=image2[0:1000,0:1000]
@@ -658,199 +654,15 @@ def outlinerfilter(image,k=7):
     boxplot_2d(y[0:int(y.shape[0]),:],y[:,0:int(y.shape[1])],ax=ax2, whis=7)
     ax2.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
-    #print(y.dtype)
+    print(y.dtype)
     return y
 
-import os
-def findcountour(image1,image2):
-    imagesource=image2
-    'поиск контуров'
-    edges = cv2.Canny(image=image1, threshold1=1, threshold2=2)
-   
-    plt.figure(figsize=(15,7))
-    plt.imshow(edges[0:1000,0:1000],cmap='gray',vmax=edges.max(),vmin=edges.min())
-    #plt.grid(True)
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    h0, w0 = image1.shape[:2]
-    print(h0//2)
-    print(w0//2)
-    xcentr=[]
-    ycentr=[]
-    meanbackground=[]
-    meanforeground=[]
-    maxbackground=[]
-    maxforeground=[]
-    modebackground=[]
-    modeforeground=[]
-    pct99background=[]
-    pct99foreground=[]
-    pct90background=[]
-    pct90foreground=[]
-    meanbackgroundrect=[]
-    meanforegroundrect=[]
-    maxbackgroundrect=[]
-    maxforegroundrect=[]
-    modebackgroundrect=[]
-    modeforegroundrect=[]
-    pct99backgroundrect=[]
-    pct99foregroundrect=[]
-    pct90backgroundrect=[]
-    pct90foregroundrect=[]
-    xcentrrect=[]
-    ycentrrect=[]
-    intensivity=[]
-    widthrect=[]
-    heightrect=[]
-    anglerect=[]
-    x1rect=[]
-    y1rect=[]
-    x2rect=[]
-    y2rect=[]
-    x3rect=[]
-    y3rect=[]
-    x4rect=[]
-    y4rect=[]
-    intensivityrect=[]
-    dcentrrect=[]
-    dcentr=[]
-    
-    width=[]
-    areas=[]
-    perimeters=[]
-    areasrect=[]
-    perimetersrect=[]
-    height=[]
-    angle=[]
-    x1=[]
-    y1=[]
-    x2=[]
-    y2=[]
-    x3=[]
-    y3=[]
-    x4=[]
-    y4=[]
-    ret, thresh = cv2.threshold(edges, 1, 256, 0)
-    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    
-    imageb=np.zeros_like(image1,dtype=np.uint8)
-    
-    for num,i in enumerate(contours):
-        M = cv2.moments(i)
-        (x,y), (Width, Height), Angle= cv2.minAreaRect(i)
-        
-        rect = cv2.minAreaRect(i)
-        box = cv2.boxPoints(rect)
-    
-        dcentrrect.append(np.sqrt(np.square(np.subtract(x,h0//2))+np.square(np.subtract(y,w0//2))))
-        xcentrrect.append(x)
-        ycentrrect.append(y)
-        widthrect.append(Width)
-        heightrect.append(Height)
-        anglerect.append(Angle)
-        x1rect.append(box[0][0])
-        y1rect.append(box[0][1])
-        x2rect.append(box[1][0])
-        y2rect.append(box[1][1])
-        x3rect.append(box[2][0])
-        y3rect.append(box[2][1])
-        x4rect.append(box[3][0])
-        y4rect.append(box[3][1])
-        areasrect.append(cv2.contourArea(i))
-        perimetersrect.append(cv2.arcLength(i,True))
-        
-        intensivityrect.append(imagesource[int(np.floor(y)),int(np.floor(x))])
-        x,y,w,h = cv2.boundingRect(i)
-        imagef=cv2.fillPoly(imageb,i, color=(255,255,255))
-        image2=cv2.bitwise_and(image1,imagef)
-        image2=image1
-        meanbrect,meanfrect,maxbrect,maxfrect,modebrect,modefrect,ptc90brect,ptc90frect,ptc99brect,ptc99frect=groundimage(image2[y:y+h, x:x+w])
-       
-        meanbackgroundrect.append(meanbrect)
-        meanforegroundrect.append(meanfrect)
-        maxbackgroundrect.append(maxbrect)
-        maxforegroundrect.append(maxfrect)
-        modebackgroundrect.append(modebrect)
-        modeforegroundrect.append(modefrect)
-        pct99backgroundrect.append(ptc99brect)
-        pct99foregroundrect.append(ptc99frect)
-        pct90backgroundrect.append(ptc90brect)
-        pct90foregroundrect.append(ptc90brect)
-        if M['m00'] != 0:
-            cx = int(M['m10']/M['m00'])
-            cy = int(M['m01']/M['m00'])
-            xcentr.append(cx)
-            ycentr.append(cy)
-            (x,y), (Width, Height), Angle= cv2.minAreaRect(i)
-            width.append(Width)
-            height.append(Height)
-            angle.append(Angle)
-            rect = cv2.minAreaRect(i)
-            box = cv2.boxPoints(rect)
-            x1.append(box[0][0])
-            y1.append(box[0][1])
-            x2.append(box[1][0])
-            y2.append(box[1][1])
-            x3.append(box[2][0])
-            y3.append(box[2][1])
-            x4.append(box[3][0])
-            y4.append(box[3][1])
-            areas.append(cv2.contourArea(i))
-            perimeters.append(cv2.arcLength(i,True))
-            intensivity.append(imagesource[cy,cx])
-            x,y,w,h = cv2.boundingRect(i)
-            dcentr.append(np.sqrt(np.square(np.subtract(cx,h0//2))+np.square(np.subtract(cy,w0//2))))
-            #imagef=cv2.fillPoly(imageb,i, color=(255,255,255))
-            #image2=cv2.bitwise_and(image1,imagef)
-            meanb,meanf,maxb,maxf,modeb,modef,ptc90b,ptc90f,ptc99b,ptc99f=groundimage(image1[y:y+h, x:x+w])
-       
-            meanbackground.append(meanb)
-            meanforeground.append(meanf)
-            maxbackground.append(maxb)
-            maxforeground.append(maxf)
-            modebackground.append(modeb)
-            modeforeground.append(modef)
-            pct99background.append(ptc99b)
-            pct99foreground.append(ptc99f)
-            pct90background.append(ptc90b)
-            pct90foreground.append(ptc90b)
-    print('Количество')
-    print(len(contours))
-    print(len(xcentr))
-    print()
-        
-            
-    d={'xcentr':xcentr,'ycentr':ycentr,'intensivity':intensivity,'width':width,
-    'height':height,'angle':angle,'x1':x1,'y1':y1, 'x2':x2,'y2':y2,'x3':x3,
-       'y3':y3,'x4':x4,'y4':y4,'areas':areas,
-     'perimeters':perimeters,'meanbackground':meanbackground,'meanforeground':meanforeground,
-       'maxbackground':maxbackground,'modebackground':modebackground,
-       'modeforeground':modeforeground,'pct99background':pct99background,
-       'pct99foreground':pct99foreground,'pct90background':pct90background,
-       'pct90foreground':pct90foreground,'dcentr':dcentr}
-    df=pd.DataFrame(data=d)
-    print(df['intensivity'].min())
-    print(df['intensivity'].max())
-    df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityfilt16parwithoutbackgroundparametrsbf2.xlsx")
-    d={'xcentrrect':xcentrrect,'ycentrrect':ycentrrect,'intensivityrect':intensivityrect,'widthrect':widthrect,
-    'heightrect':heightrect,'anglerect':anglerect,'x1rect':x1rect,'y1rect':y1rect, 
-    'x2rect':x2rect,'y2rect':y2rect,'x3rect':x3rect,'y3rect':y3rect,'x4rect':x4rect,'y4rect':y4rect,'areasrect':areasrect,
-     'perimetersrect':perimetersrect,'meanbackgroundrect':meanbackgroundrect,'meanforegroundrect':meanforegroundrect,
-       'maxbackgroundrect':maxbackgroundrect,'modebackgroundrect':modebackgroundrect,
-       'modeforegroundrect':modeforegroundrect,'pct99backgroundrect':pct99backgroundrect,
-       'pct99foregroundrect':pct99foregroundrect,'pct90backgroundrect':pct90backgroundrect,
-       'pct90foregroundrect':pct90foregroundrect,'dcentrrect':dcentrrect }
-    df=pd.DataFrame(data=d)
-    print(df['intensivityrect'].min())
-    print(df['intensivityrect'].max())
-    df.to_excel("C:/Users/evgen/Downloads/contourcentrintensivityrectfilt16parrectwithoutbackgroundparametrsbf2.xlsx")
-    
-    
+
 def main():
     image=readimage("C:/Users/evgen/Downloads/s_1_1102_c.jpg")
     imagebefore=image
-    backgroundbefore,foregroundbefore=imageground(imagebefore)
-    imagebefore= cv2.normalize(imagebefore, None, 0, 4095, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
+    backgroundbefore,foregroundbefore,unknownbefore=imageground(imagebefore)
+    imagebefore= cv2.normalize(imagebefore, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
     
     fig,(ax1,ax2) = plt.subplots(ncols=2)
     ax1.imshow(imagebefore,cmap='gray',vmax=imagebefore.max(),vmin=imagebefore.min())
@@ -862,19 +674,13 @@ def main():
     
     plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_beforefiltration1.jpg")
     
-    image=outlinerfilter(image,k=3)
-    
     image=filtration(image,"C:/Users/evgen/Downloads/s_1_1101_a.jpg")
     imageafter=image
-    backgroundafter,foregroundafter=imageground(imageafter)
+    backgroundafter,foregroundafter,unknownafter=imageground(imageafter)
     
     imageafter8b=imageafter
-    imageafter=cv2.normalize(imageafter, None, 0, 4095, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
+    imageafter=cv2.normalize(imageafter, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
     imageafter=cv2.subtract(imageafter,backgroundafter)#foregroundafter
-    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_cfilt2.jpg",imageafter)
-    afterimage=cv2.absdiff(imageafter,backgroundafter)
-    cv2.imwrite("C:/Users/evgen/Downloads/s_1_1102_cfilt3.jpg",afterimage)
-    #imageafter=cv2.bitwise_and(imageafter,foregroundafter)
     print(f'Max after filtration={np.amax(imageafter)}')
     print(f'Min after filtration={np.amin(imageafter)}')
     #image=filtration(image,"C:/s_1_1101_a.jpg")
@@ -887,32 +693,18 @@ def main():
                     color = 'k')   #  Цвет делений
     plt.savefig("C:/Users/evgen/Downloads/s_1_1102_c_afterfiltration1.jpg")
     
-    plt.figure(figsize=(15,7))
-    plt.subplot(211)
-    plt.plot(imagebefore[:,600],'k')
-    plt.plot(imageafter[:,600],'r')
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    plt.grid(True)
-    plt.subplot(212)
-    plt.plot(imagebefore[600,:],'g')
-    plt.plot(imageafter[600,:],'b')
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    plt.grid(True)
-    findcountour(imageafter8b,imageafter)
     
+    imageafteradd=cv2.add(backgroundafter,foregroundafter)
+    print(np.all(imageafteradd==imageafter))
+    print(np.any(imageafteradd==imageafter))
+    imageafteradd=cv2.add(imageafteradd,unknownafter)
+    print(np.all(imageafteradd==imageafter))
+    print(np.any(imageafteradd==imageafter))
     plt.show()
     
     
 if __name__ == "__main__":
     main()
-
-
-# In[ ]:
-
-
-
 
 
 # In[ ]:

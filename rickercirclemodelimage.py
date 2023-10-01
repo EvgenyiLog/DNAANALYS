@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
+# In[1]:
 
 
 from PIL import Image
@@ -83,14 +83,14 @@ def localstdmean(image,N):
     
 
 def modelimage():
-    N=int(input('Введите высоту изображения '))
-    M=int(input('Введите ширину изображения '))
-    K1=int(input('Введите количество точек 1 '))
-    K2=int(input('Введите количество точек 2 '))
-    K3=int(input('Введите количество точек 3 '))
-    R1=int(input('Введите радиус 1'))
-    R2=int(input('Введите радиус 2'))
-    R3=int(input('Введите радиус 2'))
+    N=int(input('Введите высоту изображения= '))
+    M=int(input('Введите ширину изображения= '))
+    K1=int(input('Введите количество точек 1= '))
+    K2=int(input('Введите количество точек 2= '))
+    K3=int(input('Введите количество точек 3= '))
+    R1=int(input('Введите радиус 1='))
+    R2=int(input('Введите радиус 2='))
+    R3=int(input('Введите радиус 3='))
     amplitude1=int(input('Введите амплитуду 1='))
     amplitude2=int(input('Введите амплитуду 2='))
     amplitude3=int(input('Введите амплитуду 3='))
@@ -181,6 +181,14 @@ def modelimage():
     imagem=cv2.normalize(imagem, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
     image=cv2.normalize(image, None, 0, 4096, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
     image=cv2.add(image,imagem)
+    image= cv2.blur(image,(3,3))
+    image = cv2.GaussianBlur(image, (3,3),0)
+    kernel = np.ones((3,3),np.float32)/9
+    image = cv2.filter2D(image,-1,kernel)
+    image = cv2.medianBlur(image,3)
+    image = cv2.boxFilter(image, -1, (3,3))
+    print(image.dtype)
+    print(image.min())
     fig = plt.figure(figsize=(15,7))          #create a canvas, tell matplotlib it's 3d                                                                                                              fig = plt.figure(figsize=(15,7))          #create a canvas, tell matplotlib it's 3d
     ax = fig.add_subplot(111, projection='3d')
     ax.plot_surface(xx,yy,image)
@@ -190,7 +198,18 @@ def modelimage():
     plt.imshow(image,cmap='gray',vmax=image.max(),vmin=image.min())
     #plt.grid(True)
     plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений   
+                    color = 'k')   #  Цвет делений 
+    
+    fig=plt.figure(figsize=(15,7))
+    ax = fig.add_subplot(121, projection='3d')
+    ax.plot_surface(xx,yy,image)
+    ax.grid(True)
+    ay = fig.add_subplot(122)
+    ay.imshow(image,cmap='gray',vmax=image.max(),vmin=image.min())
+    #ay.grid(True)
+    ay.tick_params(labelsize =10,#  Размер подписи
+                    color = 'k')   #  Цвет делений  
+    plt.savefig("C:/Users/evgen/Downloads/rickercirclenoisemodel.jpg")
                                                                                                                      
                                                                                                                      
 def main():
@@ -201,6 +220,18 @@ def main():
     
 if __name__ == "__main__":
     main() 
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 import pandas as pd
@@ -9,6 +9,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import seaborn as sns
+from scipy import stats
+import pingouin as pg
 
 
 def xslxreader(f):
@@ -19,6 +21,8 @@ def xslxreader(f):
         print(data.columns)
     return data
         
+from scipy.spatial import distance
+from sklearn.metrics.pairwise import euclidean_distances
         
 def main():
     df=xslxreader(os.path.abspath("C:/Users/evgen/Downloads/contourcentrintensivityrectfilt16parrectwithoutbackgroundparametrsbf2.xlsx"))
@@ -86,6 +90,27 @@ def main():
     plt.tick_params(labelsize =10,#  Размер подписи
                     color = 'k')   #  Цвет 
     plt.savefig("C:/Users/evgen/Downloads/dcentrrect.jpg")
+    
+    
+    fig,ax = plt.subplots(1,3, figsize=(15,7))
+    plt.title('PPplot',fontsize=10)
+    stats.probplot(df['dcentrrect'], plot=ax[0], dist='norm')
+    ax[0].grid(True)
+    ax[0].tick_params(labelsize =10,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    plt.title('QQplot ',fontsize=10)
+    meancr, stdcr = np.mean(df['dcentrrect']), np.std(df['dcentrrect'])
+    pg.qqplot(df['dcentrrect'], dist='norm',ax=ax[1])#,sparams=(meancr, stdcr))
+    ax[1].grid(True)
+    ax[1].tick_params(labelsize =10,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    plt.title('Boxcox ',fontsize=10)
+    xt, _ = stats.boxcox(df['dcentrrect'])
+    stats.probplot(xt,dist =stats.norm, plot=ax[2])
+    ax[2].grid(True)
+    ax[2].tick_params(labelsize =10,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    plt.savefig("C:/Users/evgen/Downloads/dcentrrectnormdiff.jpg") 
     
     df=xslxreader(os.path.abspath("C:/Users/evgen/Downloads/contourcentrintensivityfilt16parwithoutbackgroundparametrsbf2.xlsx"))
     fig=plt.figure('Boxplot stat',figsize=(15,7))
@@ -155,7 +180,84 @@ def main():
     plt.savefig("C:/Users/evgen/Downloads/dcentr.jpg") 
     
     
+    fig,ax = plt.subplots(1,3, figsize=(15,7))
+    plt.title('PPplot',fontsize=10)
+    stats.probplot(df['dcentr'], plot=ax[0], dist='norm')
+    ax[0].grid(True)
+    ax[0].tick_params(labelsize =10,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    plt.title('QQplot ',fontsize=10)
+    meanc, stdc = np.mean(df['dcentr']), np.std(df['dcentr'])
+    pg.qqplot(df['dcentr'], dist='norm',ax=ax[1])#,sparams=(meanc, stdc))
+    ax[1].grid(True)
+    ax[1].tick_params(labelsize =10,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    plt.title('Boxcox ',fontsize=10)
+    xt, _ = stats.boxcox(df['dcentr'])
+    stats.probplot(xt,dist =stats.norm, plot=ax[2])
+    ax[2].grid(True)
+    ax[2].tick_params(labelsize =10,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    plt.savefig("C:/Users/evgen/Downloads/dcentrnormdiff.jpg") 
     
+    
+   
+    x0=df['xcentr']
+    y0=df['ycentr']
+    x1=x0[::-1]
+    y1=y0[::-1]
+    X=np.subtract(x1,x0)
+    Y=np.subtract(y1,y0)
+    db=np.sqrt(np.add(np.square(X),np.square(Y)))
+    
+    ''''
+    db=euclidean_distances(a, b)
+    
+    fig=plt.figure('Dbetween',figsize=(15,7))
+    plt.subplot(221)
+    sns.histplot(db, kde=True,color='red').set_title('dcentr',fontsize=10)
+    plt.grid(True)
+    plt.tick_params(labelsize =10,#  Размер подписи
+                    color = 'k')   #  Цвет
+    plt.subplot(222)
+    sns.boxplot(db,color='m').set_title('dcentr',fontsize=10)
+    plt.grid(True)
+    plt.grid(True)
+    plt.tick_params(labelsize =10,#  Размер подписи
+                    color = 'k')   #  Цвет
+    plt.subplot(223)
+    sns.violinplot(db,color='lime').set_title('dcentr',fontsize=10)
+    plt.grid(True)
+    plt.tick_params(labelsize =10,#  Размер подписи
+                    color = 'k')   #  Цвет
+    plt.subplot(224)
+    sns.boxenplot(db,color='blue').set_title('dcentr',fontsize=10)
+    plt.grid(True)
+    plt.tick_params(labelsize =10,#  Размер подписи
+                    color = 'k')   #  Цвет 
+    plt.savefig("C:/Users/evgen/Downloads/dbetween.jpg") 
+    
+    
+    fig,ax = plt.subplots(1,3, figsize=(15,7))
+    plt.title('PPplot',fontsize=10)
+    stats.probplot(db, plot=ax[0], dist='norm')
+    ax[0].grid(True)
+    ax[0].tick_params(labelsize =10,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    plt.title('QQplot ',fontsize=10)
+    meanc, stdc = np.mean(db), np.std(df['dcentr'])
+    pg.qqplot(db, dist='norm',ax=ax[1])#,sparams=(meanc, stdc))
+    ax[1].grid(True)
+    ax[1].tick_params(labelsize =10,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    plt.title('Boxcox ',fontsize=10)
+    xt, _ = stats.boxcox(db)
+    stats.probplot(xt,dist =stats.norm, plot=ax[2])
+    ax[2].grid(True)
+    ax[2].tick_params(labelsize =10,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    plt.savefig("C:/Users/evgen/Downloads/dbetweennormdiff.jpg")
+    '''
     
     
     
@@ -164,6 +266,12 @@ def main():
     
 if __name__ == "__main__":
     main()
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:

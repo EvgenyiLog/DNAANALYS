@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[3]:
+# In[1]:
 
 
 from PIL import Image
@@ -541,7 +541,7 @@ def filtration(image,path):
     image=cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
     slp,hlp=sporco.signal.tikhonov_filter(image,3)
     hlp=ndimage.median_filter(hlp, size=11)
-    hlp=hlp<np.percentile(hlp, 90)
+    hlp=np.where(hlp<np.percentile(hlp, 90),hlp,0)
     #hlp=hlp>np.percentile(hlp, 10)
     image2 = readimage(path)
     #image2=image2[0:1000,0:1000]
@@ -616,7 +616,7 @@ def filtration(image,path):
     sigma_est =skimage.restoration.estimate_sigma(hlpfilt)
     imagew=skimage.restoration.denoise_wavelet(hlpfilt,sigma=sigma_est)
     plt.figure(figsize=(15,7))
-    plt.imshow(imagew[0:1000,0:1000],cmap='gray',vmax=imagew.max(),vmin=imagew.min())
+    plt.imshow(imagew[0:100,0:100],cmap='gray',vmax=imagew.max(),vmin=imagew.min())
     #plt.grid(True)
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
