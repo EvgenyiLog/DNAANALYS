@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[1]:
 
 
 import cv2 
@@ -146,11 +146,11 @@ def modelimage():
     ax.plot_surface(xx,yy,imagem)
     ax.grid(True)
     
-    ss = np.geomspace(1.0,128.0,10)
+    ss = np.geomspace(1.0,4.0,10)
     coeffs, wav_norm = py_cwt2d.cwt_2d(imagem, ss, 'mexh')
     # plot an image showing the combinations of all the scales
     errors = []
-    fig, axes = plt.subplots(nrows=N, ncols=N, figsize=(15, 15))
+    fig, axes = plt.subplots(nrows=N, ncols=N, figsize=(30, 30))
     for level in range(len(ss)):
         i = level // N
         j = level % N
