@@ -1,4 +1,9 @@
-# %%
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
 import numpy
 from numpy.fft import fft, ifft
 from matplotlib import pyplot as plt
@@ -448,7 +453,9 @@ def main():
 if __name__ == "__main__":
     main()
 
-# %%
+
+# In[ ]:
+
 
 
 

@@ -140,141 +140,51 @@ def modelimage():
     ax.grid(True)
     return imagem
 
-def Zero_crossing(image):
-    z_c_image = np.zeros(image.shape)
+def corrimage(image1,image2):
+    dataFT1 = fft(image1, axis=1)
+    dataFT2 = fft(image2, axis=1)
+    dataC = ifft(dataFT1 * np.conjugate(dataFT2), axis=1).real
+    plt.figure(figsize=(15, 7))
+    plt.imshow(dataC, cmap=plt.cm.gray,vmax=dataC.max(),vmin=dataC.min())
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
     
-    # For each pixel, count the number of positive
-    # and negative pixels in the neighborhood
-    
-    for i in range(1, image.shape[0] - 1):
-        for j in range(1, image.shape[1] - 1):
-            negative_count = 0
-            positive_count = 0
-            neighbour = [image[i+1, j-1],image[i+1, j],image[i+1, j+1],image[i, j-1],image[i, j+1],image[i-1, j-1],image[i-1, j],image[i-1, j+1]]
-            d = max(neighbour)
-            e = min(neighbour)
-            for h in neighbour:
-                if h>0:
-                    positive_count += 1
-                elif h<0:
-                    negative_count += 1
+    indexx,indexy=np.unravel_index(dataC.argmax(), dataC.shape)
+    print(indexx)
+    print(indexy)
+    return indexx,indexy
 
-
-            # If both negative and positive values exist in 
-            # the pixel neighborhood, then that pixel is a 
-            # potential zero crossing
-            
-            z_c = ((negative_count > 0) and (positive_count > 0))
-            
-            # Change the pixel value with the maximum neighborhood
-            # difference with the pixel
-
-            if z_c:
-                if image[i,j]>0:
-                    z_c_image[i, j] = image[i,j] + np.abs(e)
-                elif image[i,j]<0:
-                    z_c_image[i, j] = np.abs(image[i,j]) + d
-                
-    # Normalize and change datatype to 'uint8' (optional)
-    z_c_norm = z_c_image/z_c_image.max()*255
-    z_c_image = np.uint8(z_c_norm)
-
-    return z_c_image
-from skimage import filters
-def laplacian_of_gaussian(image, sigma):
-    """
-    Applies a Gaussian kernel to an image and the Laplacian afterwards.
-    """
-    
-    # blur the image using a Gaussian kernel
-    intermediate_result = filters.gaussian(image, sigma)
-    
-    # apply the mexican hat filter (Laplacian)
-    result = filters.laplace(intermediate_result)
-    
-    return result
-from scipy import ndimage
-from skimage.filters import difference_of_gaussians
-
-from skimage.filters import threshold_otsu, threshold_niblack,threshold_sauvola
+from skimage import  exposure
 def main():
-    image=modelimage()
+    image1=modelimage()
     plt.figure(figsize=(15, 7))
-    plt.imshow(image, cmap=plt.cm.gray,vmax=image.max(),vmin=image.min())
+    plt.imshow(image1, cmap=plt.cm.gray,vmax=image1.max(),vmin=image1.min())
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    image2=modelimage()
+    plt.figure(figsize=(15, 7))
+    plt.imshow(image2, cmap=plt.cm.gray,vmax=image2.max(),vmin=image2.min())
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     
-    l=cv2.Laplacian(image, cv2.CV_64F)
-    print(l.max())
-    print(l.min())
-    plt.figure(figsize=(15, 7))
-    plt.imshow(l, cmap=plt.cm.gray,vmax=l.max(),vmin=l.min())
+    indexx,indexy=corrimage(image1,image2)
+    h1, w1 = image1.shape[:2]
+    translation_matrix = np.float32([[1, 0, indexx], [0, 1, indexy]])
+    image1 = cv2.warpAffine(image1, translation_matrix, (w1, h1))
+    h2, w2 = image2.shape[:2]
+    translation_matrix = np.float32([[1, 0, indexx], [0, 1, indexy]])
+    image2 = cv2.warpAffine(image2, translation_matrix, (w2, h2))
+    # concatenate image Horizontally 
+    Hori = np.concatenate((image1, image2), axis=1) 
+    plt.figure(figsize=(15,7))
+    plt.imshow(Hori,cmap='gray',vmax=Hori.max(),vmin=Hori.min())
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
-    lzc=Zero_crossing(l)
-    print(lzc.max())
-    print(lzc.min())
-    plt.figure(figsize=(15, 7))
-    plt.imshow(lzc, cmap=plt.cm.gray,vmax=lzc.max(),vmin=lzc.min())
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    
-    l= cv2.convertScaleAbs(l)
-    print(l.max())
-    print(l.min())
-    plt.figure(figsize=(15, 7))
-    plt.imshow(l, cmap=plt.cm.gray,vmax=l.max(),vmin=l.min())
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    binary_global = image > threshold_otsu(image)
-
-    window_size = 3
-    thresh_niblack = threshold_niblack(image, window_size=window_size, k=0.8)
-    thresh_sauvola = threshold_sauvola(image, window_size=window_size)
-
-    binary_niblack = image > thresh_niblack
-    binary_sauvola = image > thresh_sauvola
-
-    plt.figure(figsize=(15, 7))
-    plt.subplot(2, 2, 1)
-    plt.imshow(image, cmap=plt.cm.gray)
-    plt.title('Original')
-    plt.axis('off')
-
-    plt.subplot(2, 2, 2)
-    plt.title('Global Threshold')
-    plt.imshow(binary_global, cmap=plt.cm.gray)
-    plt.axis('off')
-
-    plt.subplot(2, 2, 3)
-    plt.imshow(binary_niblack, cmap=plt.cm.gray)
-    plt.title('Niblack Threshold')
-    plt.axis('off')
-
-    plt.subplot(2, 2, 4)
-    plt.imshow(binary_sauvola, cmap=plt.cm.gray)
-    plt.title('Sauvola Threshold')
-    plt.axis('off')
-    
-    result=ndimage.gaussian_laplace(image, sigma=1)
-    print(result.max())
-    print(result.min())
-    plt.figure(figsize=(15, 7))
-    plt.imshow(result, cmap=plt.cm.gray,vmax=result.max(),vmin=result.min())
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    
-    log=laplacian_of_gaussian(image,1)
-    print(log.max())
-    print(log.min())
-    plt.figure(figsize=(15, 7))
-    plt.imshow(log, cmap=plt.cm.gray,vmax=log.max(),vmin=log.min())
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    
-    log=difference_of_gaussians(image, 1, 10,channel_axis=-1)
-    plt.figure(figsize=(15, 7))
-    plt.imshow(log, cmap=plt.cm.gray,vmax=log.max(),vmin=log.min())
+  
+    # concatenate image Vertically 
+    Verti = np.concatenate((image1, image2), axis=0)
+    plt.figure(figsize=(15,7))
+    plt.imshow(Verti,cmap='gray',vmax=Verti.max(),vmin=Verti.min())
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     plt.show()
@@ -282,6 +192,7 @@ def main():
     
 if __name__ == "__main__":
     main()
+    
 
 
 # In[ ]:

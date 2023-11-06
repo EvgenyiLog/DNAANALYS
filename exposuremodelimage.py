@@ -140,63 +140,7 @@ def modelimage():
     ax.grid(True)
     return imagem
 
-def Zero_crossing(image):
-    z_c_image = np.zeros(image.shape)
-    
-    # For each pixel, count the number of positive
-    # and negative pixels in the neighborhood
-    
-    for i in range(1, image.shape[0] - 1):
-        for j in range(1, image.shape[1] - 1):
-            negative_count = 0
-            positive_count = 0
-            neighbour = [image[i+1, j-1],image[i+1, j],image[i+1, j+1],image[i, j-1],image[i, j+1],image[i-1, j-1],image[i-1, j],image[i-1, j+1]]
-            d = max(neighbour)
-            e = min(neighbour)
-            for h in neighbour:
-                if h>0:
-                    positive_count += 1
-                elif h<0:
-                    negative_count += 1
-
-
-            # If both negative and positive values exist in 
-            # the pixel neighborhood, then that pixel is a 
-            # potential zero crossing
-            
-            z_c = ((negative_count > 0) and (positive_count > 0))
-            
-            # Change the pixel value with the maximum neighborhood
-            # difference with the pixel
-
-            if z_c:
-                if image[i,j]>0:
-                    z_c_image[i, j] = image[i,j] + np.abs(e)
-                elif image[i,j]<0:
-                    z_c_image[i, j] = np.abs(image[i,j]) + d
-                
-    # Normalize and change datatype to 'uint8' (optional)
-    z_c_norm = z_c_image/z_c_image.max()*255
-    z_c_image = np.uint8(z_c_norm)
-
-    return z_c_image
-from skimage import filters
-def laplacian_of_gaussian(image, sigma):
-    """
-    Applies a Gaussian kernel to an image and the Laplacian afterwards.
-    """
-    
-    # blur the image using a Gaussian kernel
-    intermediate_result = filters.gaussian(image, sigma)
-    
-    # apply the mexican hat filter (Laplacian)
-    result = filters.laplace(intermediate_result)
-    
-    return result
-from scipy import ndimage
-from skimage.filters import difference_of_gaussians
-
-from skimage.filters import threshold_otsu, threshold_niblack,threshold_sauvola
+from skimage import  exposure
 def main():
     image=modelimage()
     plt.figure(figsize=(15, 7))
@@ -204,79 +148,43 @@ def main():
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     
-    l=cv2.Laplacian(image, cv2.CV_64F)
-    print(l.max())
-    print(l.min())
+    gamma_image = exposure.adjust_gamma(image, 2)
+    print(image.mean() > gamma_image.mean())
+    
     plt.figure(figsize=(15, 7))
-    plt.imshow(l, cmap=plt.cm.gray,vmax=l.max(),vmin=l.min())
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    lzc=Zero_crossing(l)
-    print(lzc.max())
-    print(lzc.min())
-    plt.figure(figsize=(15, 7))
-    plt.imshow(lzc, cmap=plt.cm.gray,vmax=lzc.max(),vmin=lzc.min())
+    plt.imshow(gamma_image, cmap=plt.cm.gray,vmax=gamma_image.max(),vmin=gamma_image.min())
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     
-    l= cv2.convertScaleAbs(l)
-    print(l.max())
-    print(l.min())
+    corrected=exposure.adjust_sigmoid(image)
     plt.figure(figsize=(15, 7))
-    plt.imshow(l, cmap=plt.cm.gray,vmax=l.max(),vmin=l.min())
-    plt.tick_params(labelsize =20,#  Размер подписи
-                    color = 'k')   #  Цвет делений
-    binary_global = image > threshold_otsu(image)
-
-    window_size = 3
-    thresh_niblack = threshold_niblack(image, window_size=window_size, k=0.8)
-    thresh_sauvola = threshold_sauvola(image, window_size=window_size)
-
-    binary_niblack = image > thresh_niblack
-    binary_sauvola = image > thresh_sauvola
-
-    plt.figure(figsize=(15, 7))
-    plt.subplot(2, 2, 1)
-    plt.imshow(image, cmap=plt.cm.gray)
-    plt.title('Original')
-    plt.axis('off')
-
-    plt.subplot(2, 2, 2)
-    plt.title('Global Threshold')
-    plt.imshow(binary_global, cmap=plt.cm.gray)
-    plt.axis('off')
-
-    plt.subplot(2, 2, 3)
-    plt.imshow(binary_niblack, cmap=plt.cm.gray)
-    plt.title('Niblack Threshold')
-    plt.axis('off')
-
-    plt.subplot(2, 2, 4)
-    plt.imshow(binary_sauvola, cmap=plt.cm.gray)
-    plt.title('Sauvola Threshold')
-    plt.axis('off')
-    
-    result=ndimage.gaussian_laplace(image, sigma=1)
-    print(result.max())
-    print(result.min())
-    plt.figure(figsize=(15, 7))
-    plt.imshow(result, cmap=plt.cm.gray,vmax=result.max(),vmin=result.min())
+    plt.imshow(corrected, cmap=plt.cm.gray,vmax=corrected.max(),vmin=corrected.min())
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     
-    log=laplacian_of_gaussian(image,1)
-    print(log.max())
-    print(log.min())
+    imageh=exposure.equalize_adapthist(image)
     plt.figure(figsize=(15, 7))
-    plt.imshow(log, cmap=plt.cm.gray,vmax=log.max(),vmin=log.min())
+    plt.imshow(imageh, cmap=plt.cm.gray,vmax=imageh.max(),vmin=imageh.min())
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
     
-    log=difference_of_gaussians(image, 1, 10,channel_axis=-1)
+    imageh=exposure.equalize_hist(image)
     plt.figure(figsize=(15, 7))
-    plt.imshow(log, cmap=plt.cm.gray,vmax=log.max(),vmin=log.min())
+    plt.imshow(imageh, cmap=plt.cm.gray,vmax=imageh.max(),vmin=imageh.min())
     plt.tick_params(labelsize =20,#  Размер подписи
                     color = 'k')   #  Цвет делений
+    
+    imageh=exposure.match_histograms(image,imageh)
+    plt.figure(figsize=(15, 7))
+    plt.imshow(imageh, cmap=plt.cm.gray,vmax=imageh.max(),vmin=imageh.min())
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    imageh=exposure.rescale_intensity(image)
+    plt.figure(figsize=(15, 7))
+    plt.imshow(imageh, cmap=plt.cm.gray,vmax=imageh.max(),vmin=imageh.min())
+    plt.tick_params(labelsize =20,#  Размер подписи
+                    color = 'k')   #  Цвет делений
+    
     plt.show()
     
     
